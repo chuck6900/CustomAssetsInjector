@@ -20,13 +20,4 @@
       <ProjectReference Include="..\TexturePlugin\TexturePlugin.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <None Update="Audio\OggVorbis2FSB5Wrapper\oggvorbis2fsb5.exe">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </None>
-      <None Update="Audio\FFMpeg\ffmpeg.exe">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </None>
-    </ItemGroup>
-
 </Project>
