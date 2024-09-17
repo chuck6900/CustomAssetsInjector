@@ -1,0 +1,22 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="700" d:DesignHeight="400"
+             x:Class="CustomAssetsInjector.Views.MessageBox"
+             TransparencyLevelHint="AcrylicBlur"
+             CanResize="False"
+             Width="700"
+             Height="400"
+             WindowStartupLocation="CenterOwner">
+    
+    <Grid Name="MainGrid" ColumnDefinitions="6*" RowDefinitions="* Auto">
+        <ExperimentalAcrylicBorder Grid.Row="0" Grid.RowSpan="2" Grid.ColumnSpan="7" IsHitTestVisible="False" Material="{StaticResource LightAcrylicMaterial}"/>
+        
+        <ScrollViewer Name="MessageTextScroller" Grid.Row="0" Margin="10" VerticalScrollBarVisibility="Auto">
+            <TextBlock Name="MessageText" FontSize="14" TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center" TextWrapping="Wrap"></TextBlock>
+        </ScrollViewer>
+        
+        <Button Grid.Row="1" Name="InitialButton" Margin="10" CornerRadius="5" Height="50" Click="Button_Click"/>
+    </Grid>
+</Window>

@@ -1,0 +1,69 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net8.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+        <ApplicationManifest>app.manifest</ApplicationManifest>
+        <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <PublishAot>True</PublishAot>
+        <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+      <Optimize>True</Optimize>
+    </PropertyGroup>
+    
+    <ItemGroup>
+        <PackageReference Include="Avalonia" Version="11.0.11" />
+        <PackageReference Include="Avalonia.Desktop" Version="11.0.11" />
+        <PackageReference Include="Avalonia.Fonts.Inter" Version="11.0.0" />
+        <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
+        <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.0.10" />
+        
+        <AvaloniaResource Include="Assets\testAtlas.png" />
+        
+        <PackageReference Include="BinToss.GroupBox.Avalonia" Version="1.0.0" />
+        
+        <PackageReference Include="OggVorbisEncoder" Version="1.2.2" />
+        
+        <PackageReference Include="RectpackSharp" Version="1.2.0" />
+        
+        <PackageReference Include="SixLabors.ImageSharp" Version="3.1.5" />
+        
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\CustomAssetsBackend\CustomAssetsBackend.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Update="Views\MainWindow.axaml.cs">
+        <DependentUpon>MainWindow.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+      <Compile Update="Views\MessageBox.axaml.cs">
+        <DependentUpon>MessageBox.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+      <Compile Update="Views\SpriteSheetEditorWindow.axaml.cs">
+        <DependentUpon>SpriteSheetEditorWindow.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="classdata.tpk">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="Backend\Audio\OggVorbis2FSB5Wrapper\oggvorbis2fsb5.exe">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="Backend\Audio\FFMpeg\bin\ffmpeg.exe">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+</Project>

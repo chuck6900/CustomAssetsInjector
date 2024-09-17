@@ -1,0 +1,45 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="400"
+        x:Class="CustomAssetsInjector.Views.MainWindow"
+        Title="Angry Birds Epic - CustomAssetsInjector"
+        TransparencyLevelHint="AcrylicBlur"
+        Background="Transparent"
+        CanResize="False"
+        Width="500"
+        Height="400">
+        
+        <Grid RowDefinitions="* Auto Auto">
+                <ExperimentalAcrylicBorder Grid.RowSpan="3"  IsHitTestVisible="False" Material="{StaticResource AcrylicMaterial}"/>
+                <DockPanel Grid.Row="0">
+                        <Menu DockPanel.Dock="Top" Margin="2">
+                                <MenuItem Header="Settings">
+                                        <MenuItem Name="ResetApkButton" Header="Reset APK/IPA"/>
+                                        <MenuItem Name="ResetPrefsButton" Header="Reset preferences"/>
+                                </MenuItem>
+                                <MenuItem Header="Help">
+                                        <MenuItem Name="AboutButton" Header="About"/>
+                                </MenuItem>
+                                <MenuItem Header="Export bundle" Name="ExportBundleButton"/>
+                        </Menu>
+                        <TextBlock />
+                </DockPanel>
+                
+                <TextBlock Name="HintText" Grid.Row="0" Grid.RowSpan="2" Text="Select an APK or IPA." HorizontalAlignment="Center" VerticalAlignment="Center" />
+                
+                <ProgressBar Name="Progress" IsEnabled="False" IsVisible="False" Grid.Row="1" Height="25" ShowProgressText="True" CornerRadius="5" Margin="10 0 10 10" Value="0" />
+                
+                <Panel IsEnabled="False" IsVisible="False" Grid.Row="2" Name="EditorPanel">
+                        <Button Name="SpritesheetEditorButton" Margin="10 0 10 10" CornerRadius="5" Height="50"
+                                HorizontalAlignment="Stretch" VerticalContentAlignment="Center" HorizontalContentAlignment="Center">Spritesheet editor</Button>
+                </Panel>
+                
+                <Panel IsEnabled="False" IsVisible="False" Grid.Row="2" Name="ApkPanel">
+                        <Button Name="SelectApkButton" Margin="10 0 10 10" CornerRadius="5" Height="50"
+                                HorizontalAlignment="Stretch" VerticalContentAlignment="Center" HorizontalContentAlignment="Center">Select</Button>
+                </Panel>
+        </Grid>
+    
+</Window>

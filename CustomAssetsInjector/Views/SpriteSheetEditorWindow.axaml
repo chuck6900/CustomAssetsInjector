@@ -1,0 +1,152 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:gb="using:GroupBox.Avalonia.Controls"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:cai="clr-namespace:CustomAssetsInjector"
+        xmlns:controls="clr-namespace:CustomAssetsInjector.Controls"
+        mc:Ignorable="d" d:DesignWidth="1900" d:DesignHeight="1800"
+        x:Class="CustomAssetsInjector.Views.SpriteSheetEditorWindow"
+        Title="Angry Birds Epic - CustomAssetsInjector - Sprite sheet editor"
+        TransparencyLevelHint="AcrylicBlur"
+        Background="Transparent"
+        CanResize="True"
+        MinWidth="1000"
+        MinHeight="500"
+        Width="1400"
+        Height="800"
+        WindowStartupLocation="CenterScreen">
+        
+        <Grid ColumnDefinitions="* 500">
+                <ExperimentalAcrylicBorder Grid.Column="0" IsHitTestVisible="False" Material="{StaticResource DarkAcrylicMaterial}"/>
+                <ExperimentalAcrylicBorder Grid.Column="1" IsHitTestVisible="False" Material="{StaticResource AcrylicMaterial}" />
+                
+                <!-- content -->
+                
+                <controls:SpriteSheetPreviewBox IsEnabled="False" Name="PreviewGroupBox" Grid.Column="0" Header="Preview" Theme="{StaticResource GroupBoxClassic}" Margin="10">
+                </controls:SpriteSheetPreviewBox>
+                
+                
+                <!-- testing stuff -->
+                <!-- <Canvas Grid.Column="0" Width="1024" Height="1024" RenderTransformOrigin="0% 0%"> -->
+                <!--         <Canvas> -->
+                <!--                 <ExperimentalAcrylicBorder Width="1024" Height="1024" IsHitTestVisible="False" Material="{StaticResource DarkDarkAcrylicMaterial}"/> -->
+                <!--                 <Image Source="/Assets/testAtlas.png"></Image> -->
+                <!--         </Canvas> -->
+                <!-- </Canvas> -->
+                
+                <gb:GroupBox Grid.Column="1" Header="Properties" Theme="{StaticResource GroupBoxClassic}" Margin="10">
+                        <Panel>
+                                <StackPanel>
+                                        <!-- current loaded atlas display -->
+                                        <Grid ColumnDefinitions="Auto *">
+                                                <TextBlock Padding="10" Grid.Column="0" VerticalAlignment="Center">Current loaded atlas:</TextBlock>
+                                                <TextBox Focusable="False" Name="AtlasNameBox" Padding="10" Grid.Column="1" IsReadOnly="True" VerticalContentAlignment="Center">No atlas is loaded</TextBox>
+                                        </Grid>
+                                        
+                                        <!-- sprite setting tabs -->
+                                        <TabControl SelectedIndex="3" Margin="5" Name="SpriteSettingsTabControl">
+                                                <TabItem Name="SettingsTab" IsEnabled="False" Header="Sprite settings">
+                                                        <StackPanel>
+                                                                <!-- Sprite name -->
+                                                                <Grid ColumnDefinitions="Auto *">
+                                                                        <TextBlock Padding="10" Grid.Column="0" VerticalAlignment="Center">Sprite name:</TextBlock>
+                                                                        <TextBox Name="SpriteNameInput" CornerRadius="3" Margin="0 0 3 0" Padding="10" Grid.Column="1" VerticalContentAlignment="Center">No sprite is selected</TextBox>
+                                                                </Grid>
+                                                                
+                                                                <!-- Size controls -->
+                                                                <Label Margin="0 10 0 0">Size controls:</Label>
+                                                                
+                                                                <Grid ColumnDefinitions="130 160 170" RowDefinitions="* *">
+                                                                        <!-- X and Y inputs -->
+                                                                        <Grid Margin="0  5 0 0" Grid.Column="0" Grid.Row="0" ColumnDefinitions="Auto *">
+                                                                                <TextBlock Padding="10" Grid.Column="0" VerticalAlignment="Center">X:</TextBlock>
+                                                                                <NumericUpDown Name="XPositionInput" Minimum="0" CornerRadius="3" Grid.Column="1" VerticalContentAlignment="Center"></NumericUpDown>
+                                                                        </Grid>
+                                                                        <Grid Margin="1 5 0 5" Grid.Column="0" Grid.Row="1" ColumnDefinitions="Auto *">
+                                                                                <TextBlock Padding="10" Grid.Column="0" VerticalAlignment="Center">Y:</TextBlock>
+                                                                                <NumericUpDown Name="YPositionInput" Minimum="0" CornerRadius="3" Grid.Column="1" VerticalContentAlignment="Center"></NumericUpDown>
+                                                                        </Grid>
+                                                                        
+                                                                        <!-- Width and Height inputs -->
+                                                                        <Grid Margin="4  5 0 0" Grid.Column="1" Grid.Row="0" ColumnDefinitions="Auto *">
+                                                                                <TextBlock Padding="10" Grid.Column="0" VerticalAlignment="Center">Width:</TextBlock>
+                                                                                <NumericUpDown Name="WidthInput" Minimum="0" CornerRadius="3" Grid.Column="1" VerticalContentAlignment="Center"></NumericUpDown>
+                                                                        </Grid>
+                                                                        <Grid Margin="0 5 0 5" Grid.Column="1" Grid.Row="1" ColumnDefinitions="Auto *">
+                                                                                <TextBlock Padding="10" Grid.Column="0" VerticalAlignment="Center">Height:</TextBlock>
+                                                                                <NumericUpDown Name="HeightInput" Minimum="0" CornerRadius="3" Grid.Column="1" VerticalContentAlignment="Center"></NumericUpDown>
+                                                                        </Grid>
+                                                                        
+                                                                        <!-- Origin X and Origin Y inputs -->
+                                                                        <Grid Margin="4 5 0 0" Grid.Column="2" Grid.Row="0" ColumnDefinitions="Auto *">
+                                                                                <TextBlock Padding="10" Grid.Column="0" VerticalAlignment="Center">Origin X:</TextBlock>
+                                                                                <NumericUpDown Name="OriginXInput" CornerRadius="3" Minimum="0" Increment="0.01" Maximum="1" Grid.Column="1" VerticalContentAlignment="Center"></NumericUpDown>
+                                                                        </Grid>
+                                                                        <Grid Margin="0 5 0 5" Grid.Column="2" Grid.Row="1" ColumnDefinitions="Auto *">
+                                                                                <TextBlock Padding="10" Grid.Column="0" VerticalAlignment="Center">Origin Y:</TextBlock>
+                                                                                <NumericUpDown Name="OriginYInput" CornerRadius="3" Minimum="0" Increment="0.01" Maximum="1" Grid.Column="1" VerticalContentAlignment="Center"></NumericUpDown>
+                                                                        </Grid>
+                                                                </Grid>
+                                                                
+                                                                <Label Margin="0 10 0 0">Delete:</Label>
+                                                                <Grid ColumnDefinitions="* *">
+                                                                        <Button Name="DeleteRectKeepImageButton" Margin="3" CornerRadius="3" Grid.Column="0">Delete rect, keep image</Button>
+                                                                        <Button Name="DeleteRectDeleteImageButton" Margin="3" CornerRadius="3" Grid.Column="1">Delete rect, delete image</Button>
+                                                                </Grid>
+                                                        </StackPanel>
+                                                </TabItem>
+                                                
+                                                <TabItem Name="EditTab" IsEnabled="False" Header="Edit">
+                                                        <StackPanel>
+                                                                <!-- zoom info -->
+                                                                <Label>Zoom:</Label>
+                                                                <Grid ColumnDefinitions="* * *" RowDefinitions="* *">
+                                                                        <Button Grid.Row="0" Grid.Column="0" Name="ZoomOutButton" CornerRadius="3" Margin="3" Height="30">-</Button>
+                                                                        <TextBlock Grid.Row="0" Grid.Column="1" Name="CurrentZoomText" HorizontalAlignment="Center" VerticalAlignment="Center">100%</TextBlock>
+                                                                        <Button Grid.Row="0" Grid.Column="2" Name="ZoomInButton" Height="30" CornerRadius="3" Margin="3">+</Button>
+                                                                        
+                                                                        <Button Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" Name="ResetZoomButton" Height="30" CornerRadius="3" Margin="3 3 3 3" >Reset zoom</Button>
+                                                                </Grid>
+                                                                
+                                                                <Label Margin="0 10 0 0">Export / Import:</Label>
+                                                                
+                                                                <!-- export / import buttons -->
+                                                                <Grid ColumnDefinitions="* *" RowDefinitions="* *">
+                                                                        <Button Grid.Column="0"  Grid.Row="0" Name="ExportAtlasButton" IsEnabled="True" Margin="3" CornerRadius="5" Height="50">Export atlas .png</Button>
+                                                                        <Button Grid.Column="0" Grid.Row="1" Name="ImportAtlasButton" IsEnabled="True" Margin="3" CornerRadius="5" Height="50">Import atlas .png</Button>
+                                                        
+                                                                        <Button Grid.Column="1"  Grid.Row="0" Name="ExportAllSpritesButton" IsEnabled="True" Margin="3" CornerRadius="5" Height="50">Export all sprites</Button>
+                                                                        <Button Grid.Column="1" Grid.Row="1" Name="ImportSpritesButton" IsEnabled="True" Margin="3" CornerRadius="5" Height="50">Import sprite(s)</Button>
+                                                                </Grid>
+                                                        </StackPanel>
+                                                </TabItem>
+                                                
+                                                <!-- <TabItem Name="CreateTab" IsEnabled="False" Header="Create"> -->
+                                                <!--         <TextBlock>todo</TextBlock> -->
+                                                <!-- </TabItem> -->
+                                                
+                                                <TabItem Name="LogsTab" Header="Logs">
+                                                        <StackPanel>
+                                                                <ProgressBar Name="LogsProgressBar" IsEnabled="False" IsVisible="False" Height="25" Margin="3 0 3 3" CornerRadius="5" ShowProgressText="True" />
+                                                                <TextBox Focusable="False" BorderThickness="0" Name="LogWindow" Height="300" IsReadOnly="True" TextWrapping="Wrap" />
+                                                        </StackPanel>
+                                                </TabItem>
+                                        </TabControl>
+                                </StackPanel>
+                                
+                                
+                                <gb:GroupBox VerticalAlignment="Bottom" Header="Options" Theme="{StaticResource GroupBoxClassic}" Margin="3">
+                                        <StackPanel>
+                                                <TextBox Name="AtlasNameInput" CornerRadius="5" Watermark="Input an atlas name here." Margin="3" Padding="10"></TextBox>
+                                                
+                                                <CheckBox Margin="3 3 3 10" Padding="5" Name="LowResToggle" Content="Low res (SmoothMoves only)" />
+                                                
+                                                <Button Name="LoadAndSaveAtlasButton" IsEnabled="False" Height="50" Margin="3" CornerRadius="5">Load atlas / Save atlas</Button>
+                                                <Button Name="ResetButton" IsEnabled="False" Height="50" Margin="3" CornerRadius="5">Reset</Button>
+                                        </StackPanel>
+                                </gb:GroupBox>
+                        </Panel>
+                </gb:GroupBox>
+        </Grid>
+</Window>

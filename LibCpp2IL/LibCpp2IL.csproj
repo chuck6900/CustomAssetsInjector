@@ -1,0 +1,37 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <Nullable>enable</Nullable>
+        <LangVersion>12</LangVersion>
+        <DebugType>embedded</DebugType>
+        <PackageId>Samboy063.LibCpp2IL</PackageId>
+        <Title>LibCpp2IL</Title>
+        <Authors>Samboy063</Authors>
+        <Copyright>Copyright © Samboy063 2019-2023</Copyright>
+        <Company>Samboy063</Company>
+        <VersionPrefix>2022.1.0</VersionPrefix>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <RepositoryType>git</RepositoryType>
+        <RepositoryUrl>https://github.com/SamboyCoding/Cpp2IL.git</RepositoryUrl>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <Description>Library for interacting with IL2CPP metadata and binaries</Description>
+        <Configurations>Debug;Release</Configurations>
+        <TargetFramework>net8.0</TargetFramework>
+        <PolySharpIncludeRuntimeSupportedAttributes>true</PolySharpIncludeRuntimeSupportedAttributes>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <IsTrimmable>true</IsTrimmable>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <IsAotCompatible>true</IsAotCompatible>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="AssetRipper.Primitives" Version="3.1.2" />
+        <PackageReference Include="PolySharp" Version="1.14.1" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
+    </ItemGroup>
+
+</Project>

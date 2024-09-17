@@ -1,0 +1,40 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="CustomAssetsInjector.App"
+             RequestedThemeVariant="Dark">
+             <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
+
+    <Application.Styles>
+        <SimpleTheme />
+        <StyleInclude Source="Styles/ToolTipAnimations.axaml" />
+        <StyleInclude Source="Styles/ImprovedTabStyles.axaml" />
+        <StyleInclude Source="Styles/GreenProgressBar.axaml" />
+    </Application.Styles>
+             
+    <Application.Resources>
+        <ExperimentalAcrylicMaterial x:Key="LightAcrylicMaterial"
+             BackgroundSource="Digger"
+             TintColor="Black"
+             TintOpacity="0.5"
+             MaterialOpacity="0.1" />
+        
+        <ExperimentalAcrylicMaterial x:Key="AcrylicMaterial"
+             BackgroundSource="Digger"
+             TintColor="Black"
+             TintOpacity="1"
+             MaterialOpacity="0.3" />
+        
+        <ExperimentalAcrylicMaterial x:Key="DarkAcrylicMaterial"
+            BackgroundSource="Digger"
+            TintColor="Black"
+            TintOpacity="1"
+            MaterialOpacity="0.8" />
+        
+        <ExperimentalAcrylicMaterial x:Key="BlackAcrylicMaterial"
+                                     BackgroundSource="Digger"
+                                     TintColor="Black"
+                                     TintOpacity="1"
+                                     MaterialOpacity="0.9" />
+    </Application.Resources>
+             
+</Application>
