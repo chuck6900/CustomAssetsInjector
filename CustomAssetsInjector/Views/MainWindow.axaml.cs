@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
@@ -56,7 +57,7 @@ public partial class MainWindow : Window
         try
         {
             using var zip = ZipFile.OpenRead(selectedBundlePath);
-            ext = zip.IsAndroid() ? "apk" : "ipa";
+            ext = zip.IsAndroid() ? "APK" : "IPA";
         }
         catch (InvalidDataException err)
         {
@@ -64,12 +65,35 @@ public partial class MainWindow : Window
             return;
         }
 
+        var exportIsValidForIos = 
+            ext == "IPA" &&
+            Directory.GetFiles(AppBundleManager.ObbExtractFolderPath)
+                .Contains(Path.Combine(AppBundleManager.ObbExtractFolderPath, "resources.assets"));
+        
+        var exportIsValidForAndroid = 
+            ext == "APK" &&
+            !Directory.GetFiles(AppBundleManager.ObbExtractFolderPath)
+                .Contains(Path.Combine(AppBundleManager.ObbExtractFolderPath, "resources.assets"));
+
+        if ((ext == "IPA" && !exportIsValidForIos) || (ext == "APK" && !exportIsValidForAndroid))
+        {
+            var result = await MessageBox.ShowMessageBox(
+                this,
+                $"You have selected to export an {ext}, while the assets you have loaded do NOT come from an {ext}.\n" +
+                $"The exported {ext} will likely not work. Are you sure you want to continue?",
+                $"Invalid {ext}",
+                ["Yes", "Cancel"]);
+
+            if (result == "Cancel")
+                return;
+        }
+
         var file = await FileDialogUtils.PromptSaveFile(
-            $"Save modified {ext.ToUpperInvariant()}", 
+            $"Save modified {ext}", 
             this.StorageProvider, 
             null,
             ext,
-            [ext == "apk" ? FileDialogUtils.ApkFile : FileDialogUtils.IpaFile]);
+            [ext == "APK" ? FileDialogUtils.ApkFile : FileDialogUtils.IpaFile]);
 
         if (file == null)
             return;
@@ -77,12 +101,13 @@ public partial class MainWindow : Window
         ProgressService.RegisterProgress(ProgressService.CreateBundleProgressId, Progress);
         
         Progress.IsIndeterminate = true;
-        Logger.Log($"Creating {ext.ToUpperInvariant()}..");
+        Logger.Log($"Creating {ext}..");
         
         var success = await Task.Run(() => AppBundleManager.CreateBundle(selectedBundlePath, file.Path.LocalPath));
         if (!success)
         {
-            Logger.Log($"Failed to export {ext.ToUpperInvariant()}!");
+            Logger.Log($"Failed to export {ext}!");
+            Progress.IsIndeterminate = false;
             return;
         }
         
@@ -90,7 +115,7 @@ public partial class MainWindow : Window
 
         Progress.IsIndeterminate = false;
         Progress.Minimum = 0; Progress.Maximum = 1; Progress.Value = 1;
-        Logger.Log($"Successfully exported the modified {ext.ToUpperInvariant()}!");
+        Logger.Log($"Successfully exported the modified {ext}!");
     }
 
     private void ResetPrefs(object? sender, RoutedEventArgs e)
