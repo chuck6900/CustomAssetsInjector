@@ -662,14 +662,14 @@ public partial class SpriteSheetEditorWindow : Window
             // select the last sprite so the user gets an idea of where the new sprites are
             var lastNewSpriteName = spriteInfoList.LastOrDefault().SpriteData.Name;
             SelectedSprite = PreviewGroupBox.SpriteDatabase.Sprites.LastOrDefault(sprite => sprite.SpriteName == lastNewSpriteName);
-            
-            PreviewGroupBox.SelectionCanvas.IsEnabled = true;
-            PreviewGroupBox.SelectionCanvas.Opacity = 1;
         }
         catch (Exception err)
         {
             Logger.Log("An exception has occured while trying to import the sprites!", Logger.LogLevel.Exception, err);
         }
+        
+        PreviewGroupBox.SelectionCanvas.IsEnabled = true;
+        PreviewGroupBox.SelectionCanvas.Opacity = 1;
     }
 
     private async void ExportAtlasPng(object? sender, RoutedEventArgs e)

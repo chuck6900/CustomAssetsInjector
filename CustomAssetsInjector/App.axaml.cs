@@ -12,8 +12,6 @@ public partial class App : Application
 {
     public override void Initialize()
     {
-        Console.WriteLine("test");
-        
         AvaloniaXamlLoader.Load(this);
         AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
     }

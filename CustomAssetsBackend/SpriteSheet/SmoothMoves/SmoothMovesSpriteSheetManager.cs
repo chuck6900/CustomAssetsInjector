@@ -62,20 +62,20 @@ public class SmoothMovesSpriteSheetManager(string il2CppFolderPath) : SpriteShee
             var textureNames = behaviourBase["textureNames.Array"].ToList();
             var defaultPivotOffsets = behaviourBase["defaultPivotOffsets.Array"].ToList();
 
-            var (resolution, resHeight) = CommonUtils.GetImageResolution(CommonUtils.AtlasImagePath);
+            var (resWidth, resHeight) = CommonUtils.GetImageResolution(CommonUtils.AtlasImagePath);
             
             for (int i = 0; i < uvs.Count; i++)
             {
                 var spritePosRect = uvs[i];
 
-                var width = spritePosRect["width"].AsFloat * resolution;
-                var height = spritePosRect["height"].AsFloat * resolution;
+                var width = spritePosRect["width"].AsFloat * resWidth;
+                var height = spritePosRect["height"].AsFloat * resHeight;
                 
-                var startX = spritePosRect["x"].AsFloat * resolution;
+                var startX = spritePosRect["x"].AsFloat * resWidth;
                 var endX = startX + width;
 
-                var y = spritePosRect["y"].AsFloat * resolution;
-                var endY = CommonUtils.MapValues(y, 0, resolution, resolution, 0);
+                var y = spritePosRect["y"].AsFloat * resHeight;
+                var endY = CommonUtils.MapValues(y, 0, resHeight, resHeight, 0);
                 var startY = endY - height;
 
                 var spriteName = textureNames[i].AsString;
@@ -201,7 +201,7 @@ public class SmoothMovesSpriteSheetManager(string il2CppFolderPath) : SpriteShee
 
             // uvs
             uvTemplate["x"].AsFloat = (float)sprite.StartX / resWidth;
-            uvTemplate["y"].AsFloat = (float)CommonUtils.MapValues(sprite.EndY, 0, resHeight, resHeight, 0) / resHeight;
+            uvTemplate["y"].AsFloat = (float)CommonUtils.MapValues(sprite.EndX, 0, resHeight, resHeight, 0) / resHeight;
             uvTemplate["width"].AsFloat = (float)sprite.Width / resWidth;
             uvTemplate["height"].AsFloat = (float)sprite.Height / resHeight;
             
