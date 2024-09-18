@@ -14,6 +14,8 @@ public static class AppBundleManager
     
     public static readonly string ObbExtractFolderPath = Path.Combine(CommonUtils.HomeAppDataPath, "obb/");
 
+    public const int OneMB = 1024 * 1024;
+
     public static bool IsAndroid(this ZipArchive archive)
     {
         // check if the bundle contains classes.dex
@@ -29,36 +31,53 @@ public static class AppBundleManager
             Logger.Log("App bundle does not exist!");
             return false;
         }
+        
+        var splitFilePaths = new List<string>();
 
         try
         {
             File.Copy(appBundlePath, outBundlePath, true);
-            
+
             using var archive = ZipFile.Open(outBundlePath, ZipArchiveMode.Update);
 
             var isAndroid = archive.IsAndroid();
+            var obbPath = isAndroid ? "assets/bin/Data/" : "Payload/gold.app/Data/";
+            var obbFiles = Directory.GetFiles(ObbExtractFolderPath);
 
-            // copy obb over
-            var obbPath = isAndroid ? "assets\\bin\\Data" : "Payload\\gold.app\\Data";
+            var filesToImport = obbFiles.ToList();
             
-            // delete all entries in the data dir
-            var obbEntries = archive.Entries.Where(asset => Path.GetDirectoryName(asset.FullName) == obbPath);
-            obbEntries.ToList().ForEach(asset => asset.Delete());
-            
-            var files = Directory.GetFiles(ObbExtractFolderPath);
-            for (var i = 0; i < files.Length; i++)
+            if (isAndroid)
             {
-                var assetPath = files[i];
+                // filesToSplit = files where the size is greater than 1mb
+                var filesToSplit = obbFiles.Where(file => new FileInfo(file).Length > OneMB).ToList();
+
+                // remove all files which aren't scenes or sharedassets (they don't get split)
+                filesToSplit.RemoveAll(file => !(file.Contains("level") || file.Contains("sharedassets")));
+
+                filesToImport = filesToImport.Except(filesToSplit).ToList();
+
+                // split the files
+                filesToSplit.ForEach(file => splitFilePaths.AddRange(SplitFileIntoChunks(file)));
+
+                filesToImport.AddRange(splitFilePaths);
+            }
+
+            for (var i = 0; i < filesToImport.Count; i++)
+            {
+                var assetPath = filesToImport[i];
                 var fullPathInBundle = Path.Combine(obbPath, Path.GetFileName(assetPath));
 
+                // delete the file if it already exists
+                archive.GetEntry(fullPathInBundle)?.Delete();
+
                 archive.CreateEntryFromFile(assetPath, fullPathInBundle);
-                
+
                 ProgressService.UpdateProgress(
                     ProgressService.CreateBundleProgressId,
                     i,
                     false,
                     0,
-                    files.Length - 1,
+                    filesToImport.Count - 1,
                     "Importing modified obb, {0}/{3} files imported ({1:0}%)");
             }
 
@@ -77,9 +96,37 @@ public static class AppBundleManager
             Logger.Log("Failed to create app bundle!", Logger.LogLevel.Exception, err);
             return false;
         }
+        finally
+        {
+            splitFilePaths.ForEach(File.Delete);
+        }
         
         // all files were imported, with no exceptions
         return true;
+    }
+
+    private static List<string> SplitFileIntoChunks(string filePath)
+    {
+        using var inputFileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+        
+        var i = 0;
+        var buffer = new byte[OneMB];
+        int bytesRead;
+
+        var chunkFilePathList = new List<string>();
+        
+        while ((bytesRead = inputFileStream.Read(buffer, 0, OneMB)) > 0)
+        {
+            var newChunkFilePath = Path.ChangeExtension(filePath, Path.GetExtension(filePath) + $".split{i}");
+            
+            using (var output = new FileStream(newChunkFilePath, FileMode.Create, FileAccess.Write))
+                output.Write(buffer, 0, bytesRead);
+
+            chunkFilePathList.Add(newChunkFilePath);
+            i++;
+        }
+
+        return chunkFilePathList;
     }
     
     public static bool CheckData()
@@ -115,7 +162,7 @@ public static class AppBundleManager
             .Where(entry => Path.GetExtension(entry.FullName).Contains(".split"))
             .ToList();
 
-        // remove the split files from the obbAssets list so we dont extract them
+        // remove the split files from the obbAssets list so we don't extract them
         obbAssets.RemoveAll(asset => splitFiles.Contains(asset));
 
         Directory.CreateDirectory(extractPath);
