@@ -26,6 +26,8 @@
         
         <AvaloniaResource Include="Assets\testAtlas.png" />
         
+        <PackageReference Include="Avalonia.Themes.Simple" Version="11.0.11" />
+        
         <PackageReference Include="BinToss.GroupBox.Avalonia" Version="1.0.0" />
         
         <PackageReference Include="OggVorbisEncoder" Version="1.2.2" />
