@@ -45,7 +45,7 @@
                                         </Grid>
                                         
                                         <!-- sprite setting tabs -->
-                                        <TabControl SelectedIndex="3" Margin="5" Name="SpriteSettingsTabControl">
+                                        <TabControl SelectedIndex="2" Margin="5" Name="SpriteSettingsTabControl">
                                                 <TabItem Name="SettingsTab" IsEnabled="False" Header="Sprite settings">
                                                         <StackPanel>
                                                                 <!-- Sprite name -->
