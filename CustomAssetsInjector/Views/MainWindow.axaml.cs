@@ -48,7 +48,7 @@ public partial class MainWindow : Window
             this.StorageProvider, 
             [FileDialogUtils.ApkFile, FileDialogUtils.IpaFile]);
 
-        if (selectedBundleFile == null)
+        if (selectedBundleFile == null || !File.Exists(selectedBundleFile.Path.LocalPath))
             return;
 
         var selectedBundlePath = selectedBundleFile.Path.LocalPath;
@@ -92,7 +92,7 @@ public partial class MainWindow : Window
             $"Save modified {ext}", 
             this.StorageProvider, 
             null,
-            ext,
+            ext.ToLowerInvariant(),
             [ext == "APK" ? FileDialogUtils.ApkFile : FileDialogUtils.IpaFile]);
 
         if (file == null)

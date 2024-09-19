@@ -640,9 +640,11 @@ public partial class SpriteSheetEditorWindow : Window
                 var (width, height) = CommonUtils.GetImageResolution(path);
                 
                 // we only really need to set the width and height
+                var spriteName = Path.GetFileNameWithoutExtension(path);
+                
                 var spriteData = new SpriteData
                 {
-                    Name = Path.GetFileNameWithoutExtension(path),
+                    Name = spriteName,
                     
                     Width = width,
                     Height = height

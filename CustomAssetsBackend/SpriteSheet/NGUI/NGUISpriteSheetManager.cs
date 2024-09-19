@@ -145,16 +145,16 @@ public class NGUISpriteSheetManager(string il2CppFolderPath) : SpriteSheetManage
             var mSprites = atlasBase["mSprites.Array"];
 
             mSprites.Children.Clear();
-
+            
             foreach (var sprite in this.Sprites)
             {
                 var spriteTemplate = ValueBuilder.DefaultValueFieldFromArrayTemplate(mSprites);
                 
                 spriteTemplate["name"].AsString = sprite.Name;
-                spriteTemplate["x"].AsInt = (int)sprite.StartX;
-                spriteTemplate["y"].AsInt = (int)sprite.StartY;
-                spriteTemplate["width"].AsInt = (int)sprite.Width;
-                spriteTemplate["height"].AsInt = (int)sprite.Height;
+                spriteTemplate["x"].AsInt = (int)Math.Round(sprite.StartX);
+                spriteTemplate["y"].AsInt = (int)Math.Round(sprite.StartY);
+                spriteTemplate["width"].AsInt = (int)Math.Round(sprite.Width);
+                spriteTemplate["height"].AsInt = (int)Math.Round(sprite.Height);
 
                 mSprites.Children.Add(spriteTemplate);
             }

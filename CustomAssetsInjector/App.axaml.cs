@@ -23,7 +23,7 @@ public partial class App : Application
         Logger.Log("FATAL EXCEPTION! Please open a github issue or ping/message @heroic2 on Discord with this file.", Logger.LogLevel.Exception, err!);
         if (Environment.OSVersion.Platform == PlatformID.Win32NT)
         {
-            string mshtaArgs = "vbscript:Execute(\"CreateObject(\"\"WScript.Shell\"\").Popup \"\"An unhandled exception has occured. Please open the CAIExceptionLog.txt file located in application folder for more info.\"\",,\"\"CustomAssetsInjector crash\"\" :close\")";
+            string mshtaArgs = "vbscript:Execute(\"CreateObject(\"\"WScript.Shell\"\").Popup \"\"An unhandled exception has occured. Please open the CAIExceptionLog.txt file located by the exe for more info.\"\",,\"\"CustomAssetsInjector crash\"\" :close\")";
             Process.Start(new ProcessStartInfo("mshta", mshtaArgs));
         }
         else
