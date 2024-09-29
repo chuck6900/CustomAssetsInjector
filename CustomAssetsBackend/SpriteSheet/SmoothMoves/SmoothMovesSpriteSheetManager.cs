@@ -36,9 +36,7 @@ public class SmoothMovesSpriteSheetManager(string il2CppFolderPath) : SpriteShee
             Logger.Log("Extracting atlas png..");
             
             this.ExportTexture2D(am, texture2dAsset, CommonUtils.AtlasImagePath);
-
-            // run il2cppDumper to get dummy dlls
-
+            
             Logger.Log("Extracting atlas png.. Done!");
 
             // get texture atlas
@@ -141,7 +139,7 @@ public class SmoothMovesSpriteSheetManager(string il2CppFolderPath) : SpriteShee
             
         Logger.Log("Replacing atlas image..");
 
-        var imagePath = Path.Combine(CommonUtils.HomeAppDataPath, "atlas.png");
+        var imagePath = CommonUtils.AtlasImagePath;
         
         var newBaseField = TexturePlugin.TextureMain.ReplaceTexture(textureFileInst, textureBaseField, imagePath);
         textureAssetInfo.SetNewData(newBaseField);
@@ -201,7 +199,7 @@ public class SmoothMovesSpriteSheetManager(string il2CppFolderPath) : SpriteShee
 
             // uvs
             uvTemplate["x"].AsFloat = (float)sprite.StartX / resWidth;
-            uvTemplate["y"].AsFloat = (float)CommonUtils.MapValues(sprite.EndX, 0, resHeight, resHeight, 0) / resHeight;
+            uvTemplate["y"].AsFloat = (float)CommonUtils.MapValues(sprite.EndY, 0, resHeight, resHeight, 0) / resHeight;
             uvTemplate["width"].AsFloat = (float)sprite.Width / resWidth;
             uvTemplate["height"].AsFloat = (float)sprite.Height / resHeight;
             
