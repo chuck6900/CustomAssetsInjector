@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -750,8 +751,16 @@ public partial class SpriteSheetEditorWindow : Window
     
     private async void LoadAtlas(object? sender, RoutedEventArgs e)
     {
+        var obbSearchToken = new CancellationTokenSource();
+        void CancelLoad(object? _, RoutedEventArgs __) => obbSearchToken.Cancel();
+        
         LoadAndSaveAtlasButton.IsEnabled = false;
         AtlasNameInput.IsEnabled = false;
+        
+        ResetButton.Content = "Cancel";
+        ResetButton.Click -= Reset;
+        ResetButton.Click += CancelLoad;
+        ResetButton.IsEnabled = true;
         
         var atlasName = AtlasNameInput.Text ?? string.Empty;
         var useLowResAtlas = LowResToggle.IsChecked ?? false;
@@ -760,7 +769,8 @@ public partial class SpriteSheetEditorWindow : Window
             Logger.Log("Finding the low res atlas! You probably want to turn this off unless you know what you're doing.");
 
         ProgressService.RegisterProgress(ProgressService.SpriteSheetLoadingProgressId, LogsProgressBar);
-        ProgressService.UpdateProgress(ProgressService.SpriteSheetLoadingProgressId,
+        ProgressService.UpdateProgress(
+            ProgressService.SpriteSheetLoadingProgressId,
             0,
             true,
             0,
@@ -768,7 +778,31 @@ public partial class SpriteSheetEditorWindow : Window
             "Initializing..", 
             useLowResAtlas ? Colors.Goldenrod : Colors.SeaGreen);
         
-        var (returnCode, spriteSheetManager) = await Task.Run(() => SpriteSheetManagerFactory.CreateSpriteSheetManager(atlasName, useLowResAtlas));
+        var (returnCode, spriteSheetManager) = await Task.Run(
+            () => SpriteSheetManagerFactory.CreateSpriteSheetManager(atlasName, useLowResAtlas, obbSearchToken.Token), 
+            obbSearchToken.Token);
+
+        ResetButton.Content = "Reset";
+        ResetButton.Click -= CancelLoad;
+        ResetButton.Click += Reset;
+        ResetButton.IsEnabled = false;
+        
+        if (returnCode == CommonUtils.ReturnCode.Cancelled || obbSearchToken.Token.IsCancellationRequested)
+        {
+            Logger.Log("Loading was cancelled.");
+            ProgressService.UpdateProgress(
+                ProgressService.SpriteSheetLoadingProgressId, 
+                1, 
+                false, 
+                0, 
+                1, 
+                "Cancelled.");
+            
+            LoadAndSaveAtlasButton.IsEnabled = true;
+            AtlasNameInput.IsEnabled = true;
+            
+            return;
+        }
         
         if (returnCode != CommonUtils.ReturnCode.Success)
         {

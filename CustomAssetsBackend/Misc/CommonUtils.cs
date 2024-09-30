@@ -15,7 +15,9 @@ public static class CommonUtils
         UnknownError = -1,
         Success,
         NoObb,
-        NoSpriteSheetFound
+        NoSpriteSheetFound,
+        NoSpritesLoaded,
+        Cancelled
     }
 
     public static readonly string HomeAppDataPath = Path.Combine(GetAppDataPath(), "CustomAssetsInjector");

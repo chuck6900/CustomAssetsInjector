@@ -1,6 +1,7 @@
 ﻿using System;
+using LibCpp2IL.Logging;
 
-namespace LibCpp2IL.Logging;
+namespace CustomAssetsInjector.Utils;
 
 public class CallbackWriter : LogWriter
 {

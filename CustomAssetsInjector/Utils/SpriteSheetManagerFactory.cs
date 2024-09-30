@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using AssetsTools.NET.Cpp2IL;
 using AssetsTools.NET.Extra;
 using Avalonia.Media;
@@ -49,8 +50,8 @@ public static class SpriteSheetManagerFactory
         PreferenceService.SetPrefs(prefs);
         PreferenceService.SavePrefs();
     }
-    
-    public static (CommonUtils.ReturnCode, SpriteSheetManager?) CreateSpriteSheetManager(string atlasName, bool lowRes)
+
+    public static (CommonUtils.ReturnCode, SpriteSheetManager?) CreateSpriteSheetManager(string atlasName, bool lowRes, CancellationToken? token = null)
     {
         // load cache
         if (m_SpriteSheetCache.Count <= 0)
@@ -119,6 +120,9 @@ public static class SpriteSheetManagerFactory
         {
             try
             {
+                if (token.HasValue && token.Value.IsCancellationRequested)
+                    return (CommonUtils.ReturnCode.Cancelled, null);
+                
                 var path = obbAssets[i];
 
                 var loadedAsset = am.LoadAssetsFile(path, false);
@@ -131,7 +135,7 @@ public static class SpriteSheetManagerFactory
                 // smooth moves is guaranteed to have 1 atlas, so whenever we find one we can break
                 // with ngui, we check if we have found at least 2 ngui atlases before breaking
                 // since ngui has 2 atlases at max, we can be 100% sure we found everything
-                // this means for spritesheets with only 1 atlas, we wont be able to take the shortcut
+                // this means for spritesheets with only 1 atlas, we won't be able to take this shortcut
                 if (foundSmoothMovesSpriteSheet || nguiSpriteSheetsFound >= 2)
                     break;
                 
