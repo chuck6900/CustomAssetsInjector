@@ -292,7 +292,7 @@ public partial class MainWindow : Window
 
     private async void About_OnClick(object? sender, RoutedEventArgs e)
     {
-        const string version = "0.1.1";
+        const string version = "0.2.0";
 
         await MessageBox.ShowMessageBox(
             this,
