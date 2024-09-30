@@ -238,7 +238,7 @@ public class SmoothMovesSpriteSheetManager(string il2CppFolderPath) : SpriteShee
         
         behaviourInfo.SetNewData(behaviourBase);
         
-        var newMbAssetPath = $"{Path.ChangeExtension(monoBehaviourAsset.Path, null)}-{monoBehaviourAsset.Name}-tmp";
+        var newMbAssetPath = Path.GetTempFileName();
             
         using (var writer = new AssetsFileWriter(newMbAssetPath))
         {
@@ -416,7 +416,7 @@ public class SmoothMovesSpriteSheetManager(string il2CppFolderPath) : SpriteShee
         // }
         return CommonUtils.ReturnCode.Success;
     }
-    
+
     /// <summary>
     /// Creates a GUID without any dashes.
     /// </summary>

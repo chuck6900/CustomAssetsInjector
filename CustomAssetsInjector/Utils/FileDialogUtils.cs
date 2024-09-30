@@ -97,18 +97,11 @@ public static class FileDialogUtils
         return folders.Count > 0 ? folders[0] : null;
     }
     
-    public static FilePickerFileType ApkFile => new("APK") 
-    { 
-        Patterns = new[] { "*.apk" }
-    };
+    public static FilePickerFileType ApkFile => new("APK") { Patterns = ["*.apk"] };
     
-    public static FilePickerFileType IpaFile => new("IPA") 
-    { 
-        Patterns = new[] { "*.ipa" }
-    };
+    public static FilePickerFileType IpaFile => new("IPA") { Patterns = ["*.ipa"] };
     
-    public static FilePickerFileType PngFile => new("PNG") 
-    { 
-        Patterns = new[] { "*.png" }
-    };
+    public static FilePickerFileType PngFile => new("PNG") { Patterns = ["*.png"] };
+    
+    public static FilePickerFileType JsonFile => new("JSON") { Patterns = ["*.json"] };
 }

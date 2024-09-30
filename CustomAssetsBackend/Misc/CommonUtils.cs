@@ -16,7 +16,8 @@ public static class CommonUtils
         Success,
         NoObb,
         NoSpriteSheetFound,
-        NoSpritesLoaded,
+        NoAtlasLoaded,
+        ImportFailed,
         Cancelled
     }
 

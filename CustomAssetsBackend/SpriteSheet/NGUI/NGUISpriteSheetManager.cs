@@ -12,15 +12,11 @@ public class NGUISpriteSheetManager(string il2CppFolderPath) : SpriteSheetManage
     {
         try
         {
-            UnityAsset uiAtlasAsset =
-                AssetCache.FirstOrDefault(asset => asset.ObjectType == UnityAsset.UnityObjectType.UIAtlas) ??
-                UnityAsset.Empty;
-            UnityAsset texture2dAsset =
-                AssetCache.FirstOrDefault(asset => asset.ObjectType == UnityAsset.UnityObjectType.Texture2D) ??
-                UnityAsset.Empty;
-            UnityAsset materialAsset =
-                AssetCache.FirstOrDefault(asset => asset.ObjectType == UnityAsset.UnityObjectType.Material) ??
-                UnityAsset.Empty;
+            Sprites.Clear();
+            
+            var uiAtlasAsset = AssetCache.FirstOrDefault(asset => asset.ObjectType == UnityAsset.UnityObjectType.UIAtlas) ?? UnityAsset.Empty;
+            var texture2dAsset = AssetCache.FirstOrDefault(asset => asset.ObjectType == UnityAsset.UnityObjectType.Texture2D) ?? UnityAsset.Empty;
+            var materialAsset = AssetCache.FirstOrDefault(asset => asset.ObjectType == UnityAsset.UnityObjectType.Material) ?? UnityAsset.Empty;
 
             if (uiAtlasAsset == UnityAsset.Empty || texture2dAsset == UnityAsset.Empty || materialAsset == UnityAsset.Empty)
             {
@@ -161,7 +157,7 @@ public class NGUISpriteSheetManager(string il2CppFolderPath) : SpriteSheetManage
 
             uiAtlasInfo.SetNewData(atlasBase);
 
-            var tempAssetFilePath = $"{Path.ChangeExtension(uiAtlasAsset.Path, null)}-{uiAtlasAsset.Name}-tmp";
+            var tempAssetFilePath = Path.GetTempFileName();
 
             using (var writer = new AssetsFileWriter(tempAssetFilePath))
             {

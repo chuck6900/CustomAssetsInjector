@@ -92,10 +92,12 @@ public partial class SpriteSheetEditorWindow : Window
         LoadAndSaveAtlasButton.Click += LoadAtlas;
         
         // edit tab buttons
-        ImportAtlasButton.Click += ImportAtlasPng;
+        ImportAtlasImageButton.Click += ImportAtlasPng;
         ImportSpritesButton.Click += ImportSprites;
-        ExportAtlasButton.Click += ExportAtlasPng;
+        ExportAtlasImageButton.Click += ExportAtlasPng;
         ExportAllSpritesButton.Click += ExportAllAtlasSprites;
+        ImportAtlasDataButton.Click += ImportAtlasData;
+        ExportAtlasDataButton.Click += ExportAtlasData;
         
         // delete buttons
         DeleteRectKeepImageButton.Click += DeleteRectKeepImage;
@@ -133,25 +135,31 @@ public partial class SpriteSheetEditorWindow : Window
     {
         if (e.KeyModifiers == KeyModifiers.Control)
         {
-            // zoom in on ctrl +
-            if (e.Key == Key.Add || e.Key == Key.OemPlus)
-                PreviewGroupBox.SelectionCanvas.ZoomIn();
-            
-            // zoom out on ctrl -
-            else if (e.Key == Key.Subtract || e.Key == Key.OemMinus)
-                PreviewGroupBox.SelectionCanvas.ZoomOut();
-            
-            // advanced delete (delete rect + image) on ctrl + delete
-            else if (e.Key == Key.Delete)
-                DeleteRectDeleteImage(sender, e);
-            
-            // undo on ctrl + z
-            else if (e.Key == Key.Z)
-                m_StateManager.Undo();
-            
-            // redo on ctrl + y
-            else if (e.Key == Key.Y)
-                m_StateManager.Redo();
+            switch (e.Key)
+            {
+                // zoom in on ctrl +
+                case Key.Add:
+                case Key.OemPlus:
+                    PreviewGroupBox.SelectionCanvas.ZoomIn();
+                    break;
+                // zoom out on ctrl -
+                case Key.Subtract:
+                case Key.OemMinus:
+                    PreviewGroupBox.SelectionCanvas.ZoomOut();
+                    break;
+                // advanced delete (delete rect + image) on ctrl + delete
+                case Key.Delete:
+                    DeleteRectDeleteImage(sender, e);
+                    break;
+                // undo on ctrl + z
+                case Key.Z:
+                    m_StateManager.Undo();
+                    break;
+                // redo on ctrl + y
+                case Key.Y:
+                    m_StateManager.Redo();
+                    break;
+            }
         }
         else if (e.KeyModifiers == (KeyModifiers.Control | KeyModifiers.Shift))
         {
@@ -374,6 +382,7 @@ public partial class SpriteSheetEditorWindow : Window
         }
 
         SettingsTab.IsEnabled = true;
+        SpriteSettingsTabControl.SelectedIndex = IndexOfSpriteSettingsTab;
         SelectedSprite = rightClickedSprite;
         SpriteNameInput.Text = rightClickedSprite.SpriteName;
     }
@@ -744,6 +753,99 @@ public partial class SpriteSheetEditorWindow : Window
             Logger.Log("An exception has occured while trying to export the sprites!", Logger.LogLevel.Exception, err);
         }
     }
+    
+    private async void ImportAtlasData(object? sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var result = await MessageBox.ShowMessageBox(
+                this,
+                "Importing new spritesheet data will overwrite any unsaved changes. Are you sure you want to continue?",
+                "Confirm",
+                ["Yes", "Cancel"]);
+
+            if (result != "Yes")
+                return;
+            
+            var file = await FileDialogUtils.PromptOpenFile(
+                "Import spritesheet data from JSON file", 
+                this.StorageProvider, 
+                [FileDialogUtils.JsonFile]);
+
+            if (file == null)
+            {
+                Logger.Log("No file selected.");
+                return;
+            }
+            
+            PreviewGroupBox.SelectionCanvas.Opacity = 0.5;
+            PreviewGroupBox.SelectionCanvas.IsEnabled = false;
+            LoadAndSaveAtlasButton.IsEnabled = false;
+            ResetButton.IsEnabled = false;
+            
+            var returnCode = await Task.Run(() => m_SpriteSheetManager?.Import(file.Path.LocalPath));
+            
+            PreviewGroupBox.SelectionCanvas.Opacity = 1;
+            PreviewGroupBox.SelectionCanvas.IsEnabled = true;
+            LoadAndSaveAtlasButton.IsEnabled = true;
+            ResetButton.IsEnabled = true;
+
+            if (returnCode != CommonUtils.ReturnCode.Success)
+            {
+                // if returnCode == null, then m_SpriteSheetManager was null, meaning no atlas was loaded
+                Logger.Log($"Import failed with error code: {returnCode ?? CommonUtils.ReturnCode.NoAtlasLoaded}");
+            }
+            
+            // clear undo/redo stuff
+            m_StateManager.Reset();
+
+            // reload the atlas (don't call LoadAtlas because that will do the whole obb search process again)
+            LoadSprites();
+            LoadImage();
+        }
+        catch (Exception err)
+        {
+            Logger.Log("An exception has occured while trying to import the new spritesheet data!", Logger.LogLevel.Exception, err);
+        }
+    }
+
+    private async void ExportAtlasData(object? sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var file = await FileDialogUtils.PromptSaveFile(
+                "Import spritesheet data from JSON file", 
+                this.StorageProvider,
+                "dump.json",
+                "json",
+                [FileDialogUtils.JsonFile]);
+
+            if (file == null)
+                return;
+            
+            PreviewGroupBox.SelectionCanvas.Opacity = 0.5;
+            PreviewGroupBox.SelectionCanvas.IsEnabled = false;
+            LoadAndSaveAtlasButton.IsEnabled = false;
+            ResetButton.IsEnabled = false;
+            
+            var returnCode = await Task.Run(() => m_SpriteSheetManager?.Export(file.Path.LocalPath));
+            
+            PreviewGroupBox.SelectionCanvas.Opacity = 1;
+            PreviewGroupBox.SelectionCanvas.IsEnabled = true;
+            LoadAndSaveAtlasButton.IsEnabled = true;
+            ResetButton.IsEnabled = true;
+
+            if (returnCode != CommonUtils.ReturnCode.Success)
+            {
+                // if returnCode == null, then m_SpriteSheetManager was null, meaning no atlas was loaded
+                Logger.Log($"Export failed with error code: {returnCode ?? CommonUtils.ReturnCode.NoAtlasLoaded}");
+            }
+        }
+        catch (Exception err)
+        {
+            Logger.Log("An exception has occured while trying to export the spritesheet data!", Logger.LogLevel.Exception, err);
+        }
+    }
 
     #endregion
     
@@ -854,12 +956,14 @@ public partial class SpriteSheetEditorWindow : Window
     private async void SaveAtlas(object? sender, RoutedEventArgs e)
     {
         LoadAndSaveAtlasButton.IsEnabled = false;
+        ResetButton.IsEnabled = false;
         
         SaveSprites();
 
         var returnCode = await Task.Run(() => m_SpriteSheetManager?.Save());
 
         LoadAndSaveAtlasButton.IsEnabled = true;
+        ResetButton.IsEnabled = true;
 
         if (returnCode != CommonUtils.ReturnCode.Success)
         {
