@@ -1,6 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
+using Avalonia.VisualTree;
 
 namespace CustomAssetsInjector.Utils;
 
@@ -15,6 +20,15 @@ public static class UtilExtensions
     {
         element.IsEnabled = active;
         element.IsVisible = active;
+    }
+    
+    public static IClipboard? GetClipboard() 
+    {
+        if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime { MainWindow: { } window }) {
+            return window.Clipboard;
+        }
+
+        return null;
     }
 
     public static bool IsEqualTo<T>(this List<T> list1, List<T> list2)
