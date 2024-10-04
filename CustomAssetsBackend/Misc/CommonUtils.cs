@@ -18,7 +18,8 @@ public static class CommonUtils
         NoSpriteSheetFound,
         NoAtlasLoaded,
         ImportFailed,
-        Cancelled
+        Cancelled,
+        TextureReplaceFailed,
     }
 
     public static readonly string HomeAppDataPath = Path.Combine(GetAppDataPath(), "CustomAssetsInjector");

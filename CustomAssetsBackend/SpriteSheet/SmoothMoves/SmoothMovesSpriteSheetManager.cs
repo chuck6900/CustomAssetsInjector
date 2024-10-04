@@ -141,19 +141,13 @@ public class SmoothMovesSpriteSheetManager(string il2CppFolderPath) : SpriteShee
 
         var imagePath = CommonUtils.AtlasImagePath;
         
-        var newBaseField = TexturePlugin.TextureMain.ReplaceTexture(textureFileInst, textureBaseField, imagePath);
-        textureAssetInfo.SetNewData(newBaseField);
+        var success = TexturePlugin.TextureMain.ReplaceTexture(textureBaseField, imagePath, out var err);
 
-        var tempTex2dAssetPath = texture2dAsset.Path + "-tmp";
-        
-        using (var writer = new AssetsFileWriter(tempTex2dAssetPath))
+        if (!success)
         {
-            textureFileInst.file.Write(writer);
+            Logger.Log("Failed to replace the atlas image!", Logger.LogLevel.Exception, err);
+            return CommonUtils.ReturnCode.TextureReplaceFailed;
         }
-            
-        am.UnloadAll();
-        
-        File.Replace(tempTex2dAssetPath, texture2dAsset.Path, null);
         
         Logger.Log("Replacing atlas image.. Done!");
 

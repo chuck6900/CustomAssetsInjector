@@ -9,25 +9,24 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="AssetsTools.NET" Version="3.0.0" />
-      <PackageReference Include="AssetsTools.NET.Texture" Version="1.0.0" />
+        <PackageReference Include="StbImageSharp" Version="2.30.15" />
+        <Reference Include="AssetsTools.NET">
+            <HintPath>..\Libs\AssetsTools.NET.dll</HintPath>
+        </Reference>
+        <Reference Include="AssetsTools.NET.Texture">
+            <HintPath>..\Libs\AssetsTools.NET.Texture.dll</HintPath>
+        </Reference>
       <PackageReference Include="SixLabors.ImageSharp" Version="3.1.5" />
     </ItemGroup>
 
     <ItemGroup>
-      <None Update="crnlib.dll">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </None>
-      <None Update="ispc_texcomp.dll">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </None>
       <None Update="PVRTexLib.dll">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
-      <None Update="TexToolWrap.dll">
+      <None Update="cuttlefish.dll">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
-      <None Update="av_libglesv2.dll">
+      <None Update="textureencoder.dll">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
     </ItemGroup>
