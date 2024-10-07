@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:controls="clr-namespace:CustomAssetsInjector.Controls"
-        mc:Ignorable="d" d:DesignWidth="1900" d:DesignHeight="1800"
+        mc:Ignorable="d" d:DesignWidth="1400" d:DesignHeight="800"
         x:Class="CustomAssetsInjector.Views.SpriteSheetEditorWindow"
         Title="Angry Birds Epic - CustomAssetsInjector - Sprite sheet editor"
         TransparencyLevelHint="AcrylicBlur"
@@ -25,15 +25,6 @@
                 <controls:SpriteSheetPreviewBox IsEnabled="False" Name="PreviewGroupBox" Grid.Column="0" Header="Preview" Theme="{StaticResource GroupBoxClassic}" Margin="10">
                 </controls:SpriteSheetPreviewBox>
                 
-                
-                <!-- testing stuff -->
-                <!-- <Canvas Grid.Column="0" Width="1024" Height="1024" RenderTransformOrigin="0% 0%"> -->
-                <!--         <Canvas> -->
-                <!--                 <ExperimentalAcrylicBorder Width="1024" Height="1024" IsHitTestVisible="False" Material="{StaticResource DarkDarkAcrylicMaterial}"/> -->
-                <!--                 <Image Source="/Assets/testAtlas.png"></Image> -->
-                <!--         </Canvas> -->
-                <!-- </Canvas> -->
-                
                 <gb:GroupBox Grid.Column="1" Header="Properties" Theme="{StaticResource GroupBoxClassic}" Margin="10">
                         <Panel>
                                 <StackPanel>
@@ -44,7 +35,7 @@
                                         </Grid>
                                         
                                         <!-- sprite setting tabs -->
-                                        <TabControl SelectedIndex="2" Margin="5" Name="SpriteSettingsTabControl">
+                                        <TabControl SelectedIndex="3" Margin="5" Name="SpriteSettingsTabControl">
                                                 <TabItem Name="SettingsTab" IsEnabled="False" Header="Sprite settings">
                                                         <StackPanel>
                                                                 <!-- Sprite name -->
@@ -129,9 +120,13 @@
                                                         </StackPanel>
                                                 </TabItem>
                                                 
-                                                <!-- <TabItem Name="CreateTab" IsEnabled="False" Header="Create"> -->
-                                                <!--         <TextBlock>todo</TextBlock> -->
-                                                <!-- </TabItem> -->
+                                                <TabItem Name="CreateTab" IsEnabled="True" Header="Create">
+                                                        <Grid ColumnDefinitions="* * *">
+                                                                <Button Grid.Column="0" Name="CreateNewAtlasButton" Margin="3" CornerRadius="3">New atlas</Button>
+                                                                <Button Grid.Column="1" Name="CreateNewHeadgearButton" Margin="3" CornerRadius="3">New headgear</Button>
+                                                                <Button Grid.Column="2" Name="CreateNewWeaponButton" Margin="3" CornerRadius="3">New weapon</Button>
+                                                        </Grid>
+                                                </TabItem>
                                                 
                                                 <TabItem Name="LogsTab" Header="Logs">
                                                         <StackPanel>
