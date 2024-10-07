@@ -129,7 +129,7 @@ public static class AppBundleManager
         return chunkFilePathList;
     }
     
-    public static bool CheckData()
+    public static bool CheckExtractedData()
     {
         return CommonUtils.DirectoryExistsWithFiles(ObbExtractFolderPath) && CommonUtils.DirectoryExistsWithFiles(Il2CppExtractFolderPath);
     }

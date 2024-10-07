@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using AssetsTools.NET;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -298,13 +299,22 @@ public partial class SpriteSheetEditorWindow : Window
         
         // pack current sprites
         // packing sprites after deleting the rect means that the image will not be packed into the spritesheet and will get removed
-        await Task.Run(() => RePackAndParseSprites());
+        var newSprites = await Task.Run(() => RePackAndParseSprites());
+        
+        m_SpriteSheetManager?.Sprites.Clear();
+        m_SpriteSheetManager?.Sprites.AddRange(newSprites.Select(info => info.SpriteData));
+        
+        // parse again
+        LoadSprites();
+
+        // reload image
+        LoadImage();
         
         PreviewGroupBox.SelectionCanvas.IsEnabled = true;
         PreviewGroupBox.SelectionCanvas.Opacity = 1;
     }
     
-    private void RePackAndParseSprites(List<RectPacker.PackingSpriteData>? sprites = null)
+    private List<RectPacker.PackingSpriteData> RePackAndParseSprites(List<RectPacker.PackingSpriteData>? sprites = null)
     {
         var atlasImage = Image.Load<Rgba32>(m_AtlasImagePath);
         
@@ -349,19 +359,7 @@ public partial class SpriteSheetEditorWindow : Window
             spriteInfoList.Add(spriteInfo);
         }
 
-        var newSprites = RectPacker.PackRects(spriteInfoList, m_AtlasImagePath, 2);
-        
-        m_SpriteSheetManager?.Sprites.Clear();
-        m_SpriteSheetManager?.Sprites.AddRange(newSprites.Select(info => info.SpriteData));
-
-        Dispatcher.UIThread.Invoke(() =>
-        {
-            // parse again
-            LoadSprites();
-
-            // reload image
-            LoadImage();
-        });
+        return RectPacker.PackRects(spriteInfoList, m_AtlasImagePath, 2);
     }
     
     #endregion
@@ -629,7 +627,7 @@ public partial class SpriteSheetEditorWindow : Window
                 this.StorageProvider, 
                 [FileDialogUtils.PngFile]);
         
-            if (files == null)
+            if (files == null || files.Count == 0)
             {
                 Logger.Log("No files selected.");
                 return;
@@ -669,7 +667,16 @@ public partial class SpriteSheetEditorWindow : Window
             }
             
             // pack all current sprites + the new ones in the list
-            await Task.Run(() => RePackAndParseSprites(spriteInfoList));
+            var newSprites = await Task.Run(() => RePackAndParseSprites(spriteInfoList));
+            
+            m_SpriteSheetManager?.Sprites.Clear();
+            m_SpriteSheetManager?.Sprites.AddRange(newSprites.Select(info => info.SpriteData));
+            
+            // parse again
+            LoadSprites();
+
+            // reload image
+            LoadImage();
             
             // select the last sprite so the user gets an idea of where the new sprites are
             var lastNewSpriteName = spriteInfoList.LastOrDefault().SpriteData.Name;
@@ -849,7 +856,7 @@ public partial class SpriteSheetEditorWindow : Window
 
     #endregion
     
-    #region Loading and saving
+    #region Loading, saving and creating
     
     private async void LoadAtlas(object? sender, RoutedEventArgs e)
     {
@@ -1072,6 +1079,9 @@ public partial class SpriteSheetEditorWindow : Window
         PreviewGroupBox.Acrylic.SetActive(true);
         
         EditTab.IsEnabled = true;
+        
+        // trigger a re-render so the AtlasImage's bounds updates
+        this.UpdateLayout();
         
         SetMaxSizeControlValues();
     }

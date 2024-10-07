@@ -1,9 +1,5 @@
-﻿using System.Globalization;
-using AssetsTools.NET;
-using AssetsTools.NET.Extra;
+﻿using AssetsTools.NET;
 using AssetsTools.NET.Texture;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
 
 namespace TexturePlugin;
 

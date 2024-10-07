@@ -40,7 +40,7 @@ public partial class MainWindow : Window
 
     private async void ExportBundle(object? sender, RoutedEventArgs e)
     {
-        if (!AppBundleManager.CheckData())
+        if (!AppBundleManager.CheckExtractedData())
             return;
         
         var selectedBundleFile = await FileDialogUtils.PromptOpenFile(
@@ -221,12 +221,14 @@ public partial class MainWindow : Window
         PreferenceService.Initialize();
         
         // check obb and il2cpp data
-        if (AppBundleManager.CheckData())
+        if (AppBundleManager.CheckExtractedData())
         {
             ApkPanel.SetActive(false);
             EditorPanel.SetActive(true);
 
             HintText.Text = SelectEditorHintText;
+            
+            SpriteSheetEditorButton_OnClick(sender, e);
 
             return;
         }
