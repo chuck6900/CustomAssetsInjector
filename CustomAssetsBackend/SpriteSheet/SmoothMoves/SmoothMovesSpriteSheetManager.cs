@@ -244,171 +244,172 @@ public class SmoothMovesSpriteSheetManager(string il2CppFolderPath) : SpriteShee
         File.Replace(newMbAssetPath, monoBehaviourAsset.Path, null);
             
         Logger.Log("Reconstructing MonoBehaviour.. Done!");
-            
-        // parse json, find new items
-        // clone headgear file, load it and replace the texture atlas with the monobehaviour
-        // replace material with new material
-
-        // foreach (NewHeadgear headgear in headgearSettings.NewHeadgear)
-        // {
-        //     Console.WriteLine($"Currently creating headgear for: '{headgear.HeadgearName}'");
-        //     string templatePrefabsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "templatePrefabs");
-        //     string headgearTemplate = templatePrefabsPath + "/headgear.template";
-        //     string destPath = $"{tempExtractPath}assets/bin/Data/{headgear.HeadgearName}";
-        //         
-        //     File.Delete(destPath);
-        //     File.Copy(headgearTemplate, destPath);
-        //
-        //     am.MonoTempGenerator = new MonoCecilTempGenerator(dummyDllPath);
-        //
-        //     var headgearAsset = am.LoadAssetsFile(destPath);
-        //     var frontAssetInfo = headgearAsset.file.GetAssetInfo(1);
-        //     var backAssetInfo = headgearAsset.file.GetAssetInfo(2);
-        //     var mainAssetInfo = headgearAsset.file.GetAssetInfo(3);
-        //     var frontBF = am.GetBaseField(headgearAsset, frontAssetInfo);
-        //     var backBF = am.GetBaseField(headgearAsset, backAssetInfo);
-        //         
-        //     var mainAssetBF = am.GetBaseField(headgearAsset, mainAssetInfo);
-        //     mainAssetBF["m_Name"].AsString = headgear.HeadgearName;
-        //     mainAssetInfo.SetNewData(mainAssetBF);
-        //
-        //     monoBehaviourFileInst = am.LoadAssetsFile(monobehaviourAsset.Path);
-        //     monoBehaviourFile = monoBehaviourFileInst.file;
-        //     behaviourInf = monoBehaviourFile.GetAssetInfo(monobehaviourAsset.PathID);
-        //
-        //     var MatFileID = headgearAsset.file.Metadata.Externals.Count + 1;
-        //     var MBFileID = MatFileID + 1;
-        //
-        //     Console.WriteLine("Adding dependencies..");
-        //
-        //     // todo: important: check if the dependency already exists before adding it
-        //     
-        //     // add texture2d dependency to headgear asset
-        //     headgearAsset.file.Metadata.Externals.Add(new AssetsFileExternal
-        //     {
-        //         VirtualAssetPathName = string.Empty,
-        //         PathName = Path.GetFileName(materialAsset.Path),
-        //         OriginalPathName = Path.GetFileName(materialAsset.Path),
-        //         Guid = default,
-        //         Type = AssetsFileExternalType.Normal
-        //     });
-        //     // add monobehaviour dependency to headgear asset
-        //     headgearAsset.file.Metadata.Externals.Add(new AssetsFileExternal
-        //     {
-        //         VirtualAssetPathName = string.Empty,
-        //         PathName = Path.GetFileName(monobehaviourAsset.Path),
-        //         OriginalPathName = Path.GetFileName(monobehaviourAsset.Path),
-        //         Guid = default,
-        //         Type = AssetsFileExternalType.Normal
-        //     });
-        //     Console.WriteLine("Adding dependencies.. Done!");
-        //         
-        //     if (headgear.FrontSprite != null)
-        //     {
-        //         Console.WriteLine("Setting references on Front GameObject..");
-        //
-        //         var monoBehaviourPPtr = frontBF["m_Component.Array"][1]["component"];
-        //         var chMeshSprite = am.GetExtAsset(headgearAsset, monoBehaviourPPtr);
-        //         var chMeshSpriteBF = chMeshSprite.baseField;
-        //         chMeshSpriteBF["m_SpriteName"].AsString = headgear.FrontSprite.SpriteName;
-        //         chMeshSpriteBF["m_Width"].AsInt = (int)headgear.FrontSprite.Size.x;
-        //         chMeshSpriteBF["m_Height"].AsInt = (int)headgear.FrontSprite.Size.y;
-        //
-        //         chMeshSpriteBF["m_SmoothMovesAtlas"]["m_FileID"].AsInt = MBFileID;
-        //         chMeshSpriteBF["m_SmoothMovesAtlas"]["m_PathID"].AsLong = monobehaviourAsset.PathID;
-        //         chMeshSprite.info.SetNewData(chMeshSpriteBF);
-        //
-        //         var materialPPtr = frontBF["m_Component.Array"][3]["component"];
-        //         var meshRenderer = am.GetExtAsset(headgearAsset, materialPPtr);
-        //         var meshRendererBF = meshRenderer.baseField;
-        //
-        //         meshRendererBF["m_Materials.Array"][0]["m_FileID"].AsInt = MatFileID;
-        //         meshRendererBF["m_Materials.Array"][0]["m_PathID"].AsLong = materialAsset.PathID;
-        //
-        //         meshRenderer.info.SetNewData(meshRendererBF);
-        //         Console.WriteLine("Setting references on Front GameObject.. Done!");
-        //     }
-        //     if (headgear.BackSprite != null)
-        //     {
-        //         Console.WriteLine("Setting references on Back GameObject..");
-        //
-        //         var monoBehaviourPPtr = backBF["m_Component.Array"][1]["component"];
-        //         var chMeshSprite = am.GetExtAsset(headgearAsset, monoBehaviourPPtr);
-        //         var chMeshSpriteBF = chMeshSprite.baseField;
-        //         chMeshSpriteBF["m_SpriteName"].AsString = headgear.BackSprite.SpriteName;
-        //         chMeshSpriteBF["m_Width"].AsInt = (int)headgear.BackSprite.Size.x;
-        //         chMeshSpriteBF["m_Height"].AsInt = (int)headgear.BackSprite.Size.y;
-        //
-        //         chMeshSpriteBF["m_SmoothMovesAtlas"]["m_FileID"].AsInt = MBFileID;
-        //         chMeshSpriteBF["m_SmoothMovesAtlas"]["m_PathID"].AsLong = monobehaviourAsset.PathID;
-        //         chMeshSprite.info.SetNewData(chMeshSpriteBF);
-        //
-        //         var materialPPtr = backBF["m_Component.Array"][3]["component"];
-        //         var meshRenderer = am.GetExtAsset(headgearAsset, materialPPtr);
-        //         var meshRendererBF = meshRenderer.baseField;
-        //
-        //         meshRendererBF["m_Materials.Array"][0]["m_FileID"].AsInt = MatFileID;
-        //         meshRendererBF["m_Materials.Array"][0]["m_PathID"].AsLong = materialAsset.PathID;
-        //
-        //         meshRenderer.info.SetNewData(meshRendererBF);
-        //         Console.WriteLine("Setting references on Back GameObject.. Done!");
-        //     }
-        //     Console.WriteLine("Saving prefab..");
-        //         
-        //     var newHeadgearAssetPath = destPath + "-tmp";
-        //     File.Delete(newHeadgearAssetPath);
-        //     using (AssetsFileWriter writer = new AssetsFileWriter(newHeadgearAssetPath))
-        //     {
-        //         headgearAsset.file.Write(writer);
-        //     }
-        //     am.UnloadAll();
-        //     File.Replace(newHeadgearAssetPath, destPath, null);
-        //         
-        //     Console.WriteLine("Saving prefab.. Done");
-        //         
-        //     Console.WriteLine("Assigning AssetID to prefab..");
-        //     am.MonoTempGenerator = new MonoCecilTempGenerator(dummyDllPath);
-        //         
-        //     var rootSceneAssetPath = $"{tempExtractPath}assets/bin/Data/level1";
-        //     var rootSceneAsset = am.LoadAssetsFile(rootSceneAssetPath);
-        //     var headgearDependencyFileId = rootSceneAsset.file.Metadata.Externals.Count + 1;
-        //         
-        //     rootSceneAsset.file.Metadata.Externals.Add(new AssetsFileExternal
-        //     {
-        //         VirtualAssetPathName = string.Empty,
-        //         PathName = Path.GetFileName(destPath),
-        //         OriginalPathName = Path.GetFileName(destPath),
-        //         Guid = default,
-        //         Type = AssetsFileExternalType.Normal,
-        //     });
-        //         
-        //     // chraeap = character high-res and equipment asset provider (headgear and equipment)
-        //     
-        //     var chraeapInfo = rootSceneAsset.file.GetAssetInfo(120); // un-hardcode
-        //     var chraeapBf = am.GetBaseField(rootSceneAsset, chraeapInfo);
-        //
-        //     var editorAssetInfo = ValueBuilder.DefaultValueFieldFromArrayTemplate(chraeapBf["AssetInfos.Array"]);
-        //     editorAssetInfo["NameId"].AsString = headgear.HeadgearName;
-        //     editorAssetInfo["AssetLink"]["m_FileID"].AsInt = headgearDependencyFileId;
-        //     editorAssetInfo["AssetLink"]["m_PathID"].AsLong = 3;
-        //     editorAssetInfo["AssetLoadingType"].AsInt = 1; // memory
-        //
-        //     chraeapBf["AssetInfos.Array"].Children.Add(editorAssetInfo);
-        //         
-        //     chraeapInfo.SetNewData(chraeapBf);
-        //         
-        //     var newRootSceneAssetPath = rootSceneAssetPath + "-tmp";
-        //     File.Delete(newRootSceneAssetPath);
-        //     using (AssetsFileWriter writer = new AssetsFileWriter(newRootSceneAssetPath))
-        //     {
-        //         rootSceneAsset.file.Write(writer);
-        //     }
-        //     am.UnloadAll();
-        //     File.Replace(newRootSceneAssetPath, rootSceneAssetPath, null);
-        //     Console.WriteLine("Assigning AssetID to prefab.. Done!");
-        //     Console.WriteLine($"Headgear creation for '{headgear.HeadgearName}' done.");
-        // }
+        
         return CommonUtils.ReturnCode.Success;
+    }
+
+    public struct Headgear
+    {
+        public string Name { get; set; }
+        
+    }
+
+    private void CreateHeadgear(AssetsManager am, Headgear headgear, string outputPath)
+    {
+        // Console.WriteLine($"Currently creating headgear for: '{headgear.HeadgearName}'");
+        var templatePrefabsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "templatePrefabs");
+        var headgearTemplate = templatePrefabsPath + "/headgear.template";
+        var destPath = Path.Combine(outputPath, headgear.Name);
+            
+        File.Delete(destPath);
+        File.Copy(headgearTemplate, destPath);
+        
+        var headgearAsset = am.LoadAssetsFile(destPath);
+        var frontAssetInfo = headgearAsset.file.GetAssetInfo(1);
+        var backAssetInfo = headgearAsset.file.GetAssetInfo(2);
+        var mainAssetInfo = headgearAsset.file.GetAssetInfo(3);
+        var frontBf = am.GetBaseField(headgearAsset, frontAssetInfo);
+        var backBf = am.GetBaseField(headgearAsset, backAssetInfo);
+            
+        var mainAssetBf = am.GetBaseField(headgearAsset, mainAssetInfo);
+        mainAssetBf["m_Name"].AsString = headgear.HeadgearName;
+        mainAssetInfo.SetNewData(mainAssetBf);
+        
+        monoBehaviourFileInst = am.LoadAssetsFile(monobehaviourAsset.Path);
+        monoBehaviourFile = monoBehaviourFileInst.file;
+        behaviourInf = monoBehaviourFile.GetAssetInfo(monobehaviourAsset.PathID);
+        
+        var MatFileID = headgearAsset.file.Metadata.Externals.Count + 1;
+        var MBFileID = MatFileID + 1;
+        
+        Console.WriteLine("Adding dependencies..");
+        
+        // todo: important: check if the dependency already exists before adding it
+        
+        // add texture2d dependency to headgear asset
+        headgearAsset.file.Metadata.Externals.Add(new AssetsFileExternal
+        {
+            VirtualAssetPathName = string.Empty,
+            PathName = Path.GetFileName(materialAsset.Path),
+            OriginalPathName = Path.GetFileName(materialAsset.Path),
+            Guid = default,
+            Type = AssetsFileExternalType.Normal
+        });
+        // add monobehaviour dependency to headgear asset
+        headgearAsset.file.Metadata.Externals.Add(new AssetsFileExternal
+        {
+            VirtualAssetPathName = string.Empty,
+            PathName = Path.GetFileName(monobehaviourAsset.Path),
+            OriginalPathName = Path.GetFileName(monobehaviourAsset.Path),
+            Guid = default,
+            Type = AssetsFileExternalType.Normal
+        });
+        Console.WriteLine("Adding dependencies.. Done!");
+            
+        if (headgear.FrontSprite != null)
+        {
+            Console.WriteLine("Setting references on Front GameObject..");
+        
+            var monoBehaviourPPtr = frontBf["m_Component.Array"][1]["component"];
+            var chMeshSprite = am.GetExtAsset(headgearAsset, monoBehaviourPPtr);
+            var chMeshSpriteBF = chMeshSprite.baseField;
+            chMeshSpriteBF["m_SpriteName"].AsString = headgear.FrontSprite.SpriteName;
+            chMeshSpriteBF["m_Width"].AsInt = (int)headgear.FrontSprite.Size.x;
+            chMeshSpriteBF["m_Height"].AsInt = (int)headgear.FrontSprite.Size.y;
+        
+            chMeshSpriteBF["m_SmoothMovesAtlas"]["m_FileID"].AsInt = MBFileID;
+            chMeshSpriteBF["m_SmoothMovesAtlas"]["m_PathID"].AsLong = monobehaviourAsset.PathID;
+            chMeshSprite.info.SetNewData(chMeshSpriteBF);
+        
+            var materialPPtr = frontBf["m_Component.Array"][3]["component"];
+            var meshRenderer = am.GetExtAsset(headgearAsset, materialPPtr);
+            var meshRendererBF = meshRenderer.baseField;
+        
+            meshRendererBF["m_Materials.Array"][0]["m_FileID"].AsInt = MatFileID;
+            meshRendererBF["m_Materials.Array"][0]["m_PathID"].AsLong = materialAsset.PathID;
+        
+            meshRenderer.info.SetNewData(meshRendererBF);
+            Console.WriteLine("Setting references on Front GameObject.. Done!");
+        }
+        if (headgear.BackSprite != null)
+        {
+            Console.WriteLine("Setting references on Back GameObject..");
+        
+            var monoBehaviourPPtr = backBf["m_Component.Array"][1]["component"];
+            var chMeshSprite = am.GetExtAsset(headgearAsset, monoBehaviourPPtr);
+            var chMeshSpriteBF = chMeshSprite.baseField;
+            chMeshSpriteBF["m_SpriteName"].AsString = headgear.BackSprite.SpriteName;
+            chMeshSpriteBF["m_Width"].AsInt = (int)headgear.BackSprite.Size.x;
+            chMeshSpriteBF["m_Height"].AsInt = (int)headgear.BackSprite.Size.y;
+        
+            chMeshSpriteBF["m_SmoothMovesAtlas"]["m_FileID"].AsInt = MBFileID;
+            chMeshSpriteBF["m_SmoothMovesAtlas"]["m_PathID"].AsLong = monobehaviourAsset.PathID;
+            chMeshSprite.info.SetNewData(chMeshSpriteBF);
+        
+            var materialPPtr = backBf["m_Component.Array"][3]["component"];
+            var meshRenderer = am.GetExtAsset(headgearAsset, materialPPtr);
+            var meshRendererBF = meshRenderer.baseField;
+        
+            meshRendererBF["m_Materials.Array"][0]["m_FileID"].AsInt = MatFileID;
+            meshRendererBF["m_Materials.Array"][0]["m_PathID"].AsLong = materialAsset.PathID;
+        
+            meshRenderer.info.SetNewData(meshRendererBF);
+            Console.WriteLine("Setting references on Back GameObject.. Done!");
+        }
+        Console.WriteLine("Saving prefab..");
+            
+        var newHeadgearAssetPath = destPath + "-tmp";
+        File.Delete(newHeadgearAssetPath);
+        using (AssetsFileWriter writer = new AssetsFileWriter(newHeadgearAssetPath))
+        {
+            headgearAsset.file.Write(writer);
+        }
+        am.UnloadAll();
+        File.Replace(newHeadgearAssetPath, destPath, null);
+            
+        Console.WriteLine("Saving prefab.. Done");
+            
+        Console.WriteLine("Assigning AssetID to prefab..");
+        am.MonoTempGenerator = new MonoCecilTempGenerator(dummyDllPath);
+            
+        var rootSceneAssetPath = $"{tempExtractPath}assets/bin/Data/level1";
+        var rootSceneAsset = am.LoadAssetsFile(rootSceneAssetPath);
+        var headgearDependencyFileId = rootSceneAsset.file.Metadata.Externals.Count + 1;
+            
+        rootSceneAsset.file.Metadata.Externals.Add(new AssetsFileExternal
+        {
+            VirtualAssetPathName = string.Empty,
+            PathName = Path.GetFileName(destPath),
+            OriginalPathName = Path.GetFileName(destPath),
+            Guid = default,
+            Type = AssetsFileExternalType.Normal,
+        });
+            
+        // chraeap = character high-res and equipment asset provider (headgear and equipment)
+        
+        var chraeapInfo = rootSceneAsset.file.GetAssetInfo(120); // un-hardcode
+        var chraeapBf = am.GetBaseField(rootSceneAsset, chraeapInfo);
+        
+        var editorAssetInfo = ValueBuilder.DefaultValueFieldFromArrayTemplate(chraeapBf["AssetInfos.Array"]);
+        editorAssetInfo["NameId"].AsString = headgear.HeadgearName;
+        editorAssetInfo["AssetLink"]["m_FileID"].AsInt = headgearDependencyFileId;
+        editorAssetInfo["AssetLink"]["m_PathID"].AsLong = 3;
+        editorAssetInfo["AssetLoadingType"].AsInt = 1; // memory
+        
+        chraeapBf["AssetInfos.Array"].Children.Add(editorAssetInfo);
+            
+        chraeapInfo.SetNewData(chraeapBf);
+            
+        var newRootSceneAssetPath = rootSceneAssetPath + "-tmp";
+        File.Delete(newRootSceneAssetPath);
+        using (AssetsFileWriter writer = new AssetsFileWriter(newRootSceneAssetPath))
+        {
+            rootSceneAsset.file.Write(writer);
+        }
+        am.UnloadAll();
+        File.Replace(newRootSceneAssetPath, rootSceneAssetPath, null);
+        Console.WriteLine("Assigning AssetID to prefab.. Done!");
+        Console.WriteLine($"Headgear creation for '{headgear.HeadgearName}' done.");
     }
 
     /// <summary>
