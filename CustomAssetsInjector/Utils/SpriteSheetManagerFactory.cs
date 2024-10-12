@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -70,11 +71,6 @@ public static class SpriteSheetManagerFactory
             
         // create an AssetsManager
         var am = CommonUtils.InitAssetManager(AppBundleManager.ObbExtractFolderPath);
-        
-        var globalMetadataPath = Path.Combine(AppBundleManager.Il2CppExtractFolderPath, "global-metadata.dat");
-        var binaryPath = Path.Combine(AppBundleManager.Il2CppExtractFolderPath, "il2cpp.binary");
-            
-        am.MonoTempGenerator = new Cpp2IlTempGenerator(globalMetadataPath, binaryPath);
 
         var nguiSpriteSheetsFound = 0;
         var foundSmoothMovesSpriteSheet = false;
@@ -129,8 +125,10 @@ public static class SpriteSheetManagerFactory
                 
                 if (CheckForNguiAtlas(am, loadedAsset, nguiMgr, atlasName))
                     nguiSpriteSheetsFound++;
-
+                
                 foundSmoothMovesSpriteSheet = CheckForSmoothMovesAtlas(am, loadedAsset, smoothMovesManager, atlasName, lowRes);
+                
+                am.UnloadAssetsFile(loadedAsset);
                 
                 // smooth moves is guaranteed to have 1 atlas, so whenever we find one we can break
                 // with ngui, we check if we have found at least 2 ngui atlases before breaking
@@ -188,6 +186,20 @@ public static class SpriteSheetManagerFactory
             nguiSpriteSheetsFound > 0 ? Colors.SeaGreen : null);
 
         return (CommonUtils.ReturnCode.Success, spriteSheetMgr);
+    }
+
+    private static void LoadTempGenerator(AssetsManager am)
+    {
+        var globalMetadataPath = Path.Combine(AppBundleManager.Il2CppExtractFolderPath, "global-metadata.dat");
+        var binaryPath = Path.Combine(AppBundleManager.Il2CppExtractFolderPath, "il2cpp.binary");
+            
+        am.MonoTempGenerator = new Cpp2IlTempGenerator(globalMetadataPath, binaryPath);
+    }
+    
+    private static void ResetTempGenerator(AssetsManager am)
+    {
+        am.MonoTempGenerator?.Dispose();
+        am.MonoTempGenerator = null;
     }
 
     private static void GetTexture2DFromMaterial(AssetsManager am, SpriteSheetManager spriteSheetMgr, string atlasName, bool isLowRes)
@@ -283,6 +295,10 @@ public static class SpriteSheetManagerFactory
                     PathId = componentExtInst.info.PathId
                 });
                 
+                LoadTempGenerator(am);
+                // reload the base field now that the temp generator has been loaded
+                componentBf = am.GetExtAsset(loadedAsset, component["component"]).baseField;
+                
                 // get material
                 var materialPPtr = componentBf["material"];
                 var materialAsset = am.GetExtAsset(loadedAsset, materialPPtr);
@@ -294,6 +310,8 @@ public static class SpriteSheetManagerFactory
                     Path = materialAsset.file.path,
                     PathId = materialAsset.info.PathId
                 });
+                
+                ResetTempGenerator(am);
 
                 return true;
             }
@@ -325,6 +343,10 @@ public static class SpriteSheetManagerFactory
             };
             
             smoothMovesManager.AssetCache.Add(mbUnityAsset);
+            
+            LoadTempGenerator(am);
+            // reload the base field now that the temp generator has been loaded
+            monoBehaviourBf = am.GetBaseField(loadedAsset, monoBehaviour);
 
             // get material
             var materialPPtr = monoBehaviourBf["material"];
@@ -339,6 +361,8 @@ public static class SpriteSheetManagerFactory
             };
 
             smoothMovesManager.AssetCache.Add(matUnityAsset);
+            
+            ResetTempGenerator(am);
 
             return true;
         }
