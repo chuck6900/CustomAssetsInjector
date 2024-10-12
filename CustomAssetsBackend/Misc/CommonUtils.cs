@@ -106,7 +106,8 @@ public static class CommonUtils
     {
         // create an AssetsManager
         var am = new AssetsManager();
-        am.LoadClassPackage(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "classdata.tpk"));
+        using (var classData = new MemoryStream(Resources.ClassDatabase))
+            am.LoadClassPackage(classData);
             
         // load globalgamemanagers so we can load a class database for the unity version
         var ggm = am.LoadAssetsFile(Path.Combine(obbPath, "globalgamemanagers"), false);

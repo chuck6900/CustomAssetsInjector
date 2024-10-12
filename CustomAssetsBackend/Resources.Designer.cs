@@ -59,5 +59,25 @@ namespace CustomAssetsBackend {
                 resourceCulture = value;
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] ClassDatabase {
+            get {
+                object obj = ResourceManager.GetObject("ClassDatabase", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] HeadgearTemplate {
+            get {
+                object obj = ResourceManager.GetObject("HeadgearTemplate", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
     }
 }

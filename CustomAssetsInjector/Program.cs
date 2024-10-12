@@ -1,7 +1,5 @@
 ﻿using Avalonia;
 using System;
-using System.IO;
-using CustomAssetsInjector.Services;
 
 namespace CustomAssetsInjector;
 
