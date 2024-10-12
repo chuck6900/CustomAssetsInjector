@@ -13,10 +13,10 @@ public class NGUISpriteSheetManager(string il2CppFolderPath) : SpriteSheetManage
         try
         {
             Sprites.Clear();
-            
-            var uiAtlasAsset = AssetCache.FirstOrDefault(asset => asset.ObjectType == UnityAsset.UnityObjectType.UIAtlas) ?? UnityAsset.Empty;
-            var texture2dAsset = AssetCache.FirstOrDefault(asset => asset.ObjectType == UnityAsset.UnityObjectType.Texture2D) ?? UnityAsset.Empty;
-            var materialAsset = AssetCache.FirstOrDefault(asset => asset.ObjectType == UnityAsset.UnityObjectType.Material) ?? UnityAsset.Empty;
+
+            var uiAtlasAsset = GetCachedAssetOfType(UnityAsset.UnityObjectType.UIAtlas);
+            var texture2dAsset = GetCachedAssetOfType(UnityAsset.UnityObjectType.Texture2D);
+            var materialAsset = GetCachedAssetOfType(UnityAsset.UnityObjectType.Material);
 
             if (uiAtlasAsset == UnityAsset.Empty || texture2dAsset == UnityAsset.Empty || materialAsset == UnityAsset.Empty)
             {
@@ -86,8 +86,8 @@ public class NGUISpriteSheetManager(string il2CppFolderPath) : SpriteSheetManage
     public override CommonUtils.ReturnCode Save()
     {
         var uiAtlasAssets = AssetCache.Where(asset => asset.ObjectType == UnityAsset.UnityObjectType.UIAtlas).ToList();
-        var texture2dAsset = AssetCache.FirstOrDefault(asset => asset.ObjectType == UnityAsset.UnityObjectType.Texture2D) ?? UnityAsset.Empty;
-        var materialAsset = AssetCache.FirstOrDefault(asset => asset.ObjectType == UnityAsset.UnityObjectType.Material) ?? UnityAsset.Empty;
+        var texture2dAsset = GetCachedAssetOfType(UnityAsset.UnityObjectType.Texture2D);
+        var materialAsset = GetCachedAssetOfType(UnityAsset.UnityObjectType.Material);
         
         if (uiAtlasAssets.Count <= 0 || texture2dAsset == UnityAsset.Empty || materialAsset == UnityAsset.Empty)
         {

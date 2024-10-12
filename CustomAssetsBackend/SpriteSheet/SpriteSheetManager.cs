@@ -19,6 +19,9 @@ public abstract class SpriteSheetManager(string il2CppFolderPath)
 
     protected readonly string Il2CppFolderPath = il2CppFolderPath;
 
+    public UnityAsset GetCachedAssetOfType(UnityAsset.UnityObjectType type)
+        => AssetCache.FirstOrDefault(asset => asset.ObjectType == type) ?? UnityAsset.Empty;
+
     protected void ExportTexture2D(AssetsManager am, UnityAsset texture2dAsset, string imagePath)
     {
         var texture2DFileInst = am.LoadAssetsFile(texture2dAsset.Path);
