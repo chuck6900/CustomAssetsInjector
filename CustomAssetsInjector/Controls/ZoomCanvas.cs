@@ -21,7 +21,7 @@ public class ZoomCanvas : Canvas
     private double m_StartingHeight;
 
     public Action<double>? BeforeZoomChanged;
-    public Action<double>? ZoomChanged;
+    public Action<double, bool>? ZoomChanged;
 
     public ZoomCanvas()
     {
@@ -63,10 +63,10 @@ public class ZoomCanvas : Canvas
 
         m_ZoomFactor = 1;
         
-        ApplyZoom();
+        ApplyZoom(true);
     }
     
-    private void ApplyZoom()
+    private void ApplyZoom(bool forReset = false)
     {
         BeforeZoomChanged?.Invoke(m_ZoomFactor);
         
@@ -76,6 +76,6 @@ public class ZoomCanvas : Canvas
         this.Width = m_StartingWidth * m_ZoomFactor;
         this.Height = m_StartingHeight * m_ZoomFactor;
         
-        ZoomChanged?.Invoke(m_ZoomFactor);
+        ZoomChanged?.Invoke(m_ZoomFactor, forReset);
     }
 }

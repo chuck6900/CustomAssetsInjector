@@ -46,12 +46,12 @@ public partial class SpriteSheetEditorWindow : Window
         {
             // if you draw a sprite, once you finish drawing, that sprite gets selected automatically
             // so make sure that we are never de-synced
-            m_SelectedSprite = PreviewGroupBox.SelectedSprite;
+            m_SelectedSprite = SpriteSheetPreviewBox.SelectedSprite;
             return m_SelectedSprite;
         }
         set
         {
-            PreviewGroupBox.SelectedSprite = value;
+            SpriteSheetPreviewBox.SelectedSprite = value;
             m_SelectedSprite = value;
             
             if (m_SelectedSprite != null)
@@ -69,12 +69,12 @@ public partial class SpriteSheetEditorWindow : Window
     {
         InitializeComponent();
 
-        PreviewGroupBox.StateManager = m_StateManager;
+        SpriteSheetPreviewBox.StateManager = m_StateManager;
         
         LoadAndSaveAtlasButton.Content = "Load atlas";
         
-        PreviewGroupBox.SpriteCreated -= PreviewGroupBox_SpriteCreated;
-        PreviewGroupBox.SpriteCreated += PreviewGroupBox_SpriteCreated;
+        SpriteSheetPreviewBox.SpriteCreated -= PreviewGroupBox_SpriteCreated;
+        SpriteSheetPreviewBox.SpriteCreated += PreviewGroupBox_SpriteCreated;
         
         // local log callbacks
         Logger.LogAction -= LogCallback;
@@ -118,10 +118,10 @@ public partial class SpriteSheetEditorWindow : Window
         OriginYInput.ValueChanged += OriginYInput_ValueChanged;
 
         // zoom controls
-        ZoomInButton.Click += delegate { PreviewGroupBox.SelectionCanvas.ZoomIn(); };
-        PreviewGroupBox.SelectionCanvas.ZoomChanged += OnSelectionCanvasZoomChanged;
-        ZoomOutButton.Click += delegate { PreviewGroupBox.SelectionCanvas.ZoomOut(); };
-        ResetZoomButton.Click += delegate { PreviewGroupBox.SelectionCanvas.ResetZoom(); };
+        ZoomInButton.Click += delegate { SpriteSheetPreviewBox.SelectionCanvas.ZoomIn(); };
+        SpriteSheetPreviewBox.SelectionCanvas.ZoomChanged += OnSelectionCanvasZoomChanged;
+        ZoomOutButton.Click += delegate { SpriteSheetPreviewBox.SelectionCanvas.ZoomOut(); };
+        ResetZoomButton.Click += delegate { SpriteSheetPreviewBox.SelectionCanvas.ResetZoom(); };
         
         // keybind handling
         this.KeyDown += OnKeyDown;
@@ -141,12 +141,12 @@ public partial class SpriteSheetEditorWindow : Window
                 // zoom in on ctrl +
                 case Key.Add:
                 case Key.OemPlus:
-                    PreviewGroupBox.SelectionCanvas.ZoomIn();
+                    SpriteSheetPreviewBox.SelectionCanvas.ZoomIn();
                     break;
                 // zoom out on ctrl -
                 case Key.Subtract:
                 case Key.OemMinus:
-                    PreviewGroupBox.SelectionCanvas.ZoomOut();
+                    SpriteSheetPreviewBox.SelectionCanvas.ZoomOut();
                     break;
                 // advanced delete (delete rect + image) on ctrl + delete
                 case Key.Delete:
@@ -184,7 +184,7 @@ public partial class SpriteSheetEditorWindow : Window
         
         e.Cancel = true;
         
-        var currentSpriteDatas = PreviewGroupBox.SpriteDatabase.Sprites
+        var currentSpriteDatas = SpriteSheetPreviewBox.SpriteDatabase.Sprites
             .Select(sprite => sprite.AsSpriteData())
             .ToList();
 
@@ -267,7 +267,7 @@ public partial class SpriteSheetEditorWindow : Window
         if (SelectedSprite == null)
             return;
 
-        var basicDeleteAction = new BasicDeleteSpriteAction(SelectedSprite, PreviewGroupBox);
+        var basicDeleteAction = new BasicDeleteSpriteAction(SelectedSprite, SpriteSheetPreviewBox);
         m_StateManager.ExecuteAction(basicDeleteAction);
     }
     
@@ -289,13 +289,13 @@ public partial class SpriteSheetEditorWindow : Window
             return;
         
         // visually indicate that its loading
-        PreviewGroupBox.SelectionCanvas.Opacity = 0.5;
-        PreviewGroupBox.SelectionCanvas.IsEnabled = false;
+        SpriteSheetPreviewBox.SelectionCanvas.Opacity = 0.5;
+        SpriteSheetPreviewBox.SelectionCanvas.IsEnabled = false;
         
         // delete rect
         // create the delete action and execute the action itself
         // don't execute it via the state manager otherwise you can undo JUST the rect delete
-        new BasicDeleteSpriteAction(SelectedSprite, PreviewGroupBox).Execute();
+        new BasicDeleteSpriteAction(SelectedSprite, SpriteSheetPreviewBox).Execute();
         
         // pack current sprites
         // packing sprites after deleting the rect means that the image will not be packed into the spritesheet and will get removed
@@ -310,8 +310,8 @@ public partial class SpriteSheetEditorWindow : Window
         // reload image
         LoadImage();
         
-        PreviewGroupBox.SelectionCanvas.IsEnabled = true;
-        PreviewGroupBox.SelectionCanvas.Opacity = 1;
+        SpriteSheetPreviewBox.SelectionCanvas.IsEnabled = true;
+        SpriteSheetPreviewBox.SelectionCanvas.Opacity = 1;
     }
     
     private List<RectPacker.PackingSpriteData> RePackAndParseSprites(List<RectPacker.PackingSpriteData>? sprites = null)
@@ -323,7 +323,7 @@ public partial class SpriteSheetEditorWindow : Window
         if (sprites != null)
             spriteInfoList.AddRange(sprites);
             
-        foreach (var sprite in PreviewGroupBox.SpriteDatabase.Sprites)
+        foreach (var sprite in SpriteSheetPreviewBox.SpriteDatabase.Sprites)
         {
             var xPos = 0;
             var yPos = 0;
@@ -487,7 +487,7 @@ public partial class SpriteSheetEditorWindow : Window
         var newXPos = (double?)e.NewValue ?? Canvas.GetLeft(selectedSprite);
         var newRightPos = newXPos + selectedSprite.Width;
         
-        Sprite.MakePointsInsideControl(PreviewGroupBox.AtlasImage, ref newXPos, ref newRightPos, ref tempTop, ref tempTop, selectedSprite.Width, 0);
+        Sprite.MakePointsInsideControl(SpriteSheetPreviewBox.AtlasImage, ref newXPos, ref newRightPos, ref tempTop, ref tempTop, selectedSprite.Width, 0);
         
         Canvas.SetLeft(selectedSprite, newXPos);
         Canvas.SetRight(selectedSprite, newRightPos);
@@ -506,7 +506,7 @@ public partial class SpriteSheetEditorWindow : Window
         var newYPos = (double?)e.NewValue ?? Canvas.GetTop(selectedSprite);
         var newBottomPos = newYPos + selectedSprite.Height;
         
-        Sprite.MakePointsInsideControl(PreviewGroupBox.AtlasImage, ref tempLeft, ref tempLeft, ref newYPos, ref newBottomPos, 0, selectedSprite.Height);
+        Sprite.MakePointsInsideControl(SpriteSheetPreviewBox.AtlasImage, ref tempLeft, ref tempLeft, ref newYPos, ref newBottomPos, 0, selectedSprite.Height);
         
         Canvas.SetTop(selectedSprite, newYPos);
         Canvas.SetBottom(selectedSprite, newBottomPos);
@@ -526,7 +526,7 @@ public partial class SpriteSheetEditorWindow : Window
         var newLeft = Canvas.GetLeft(selectedSprite);
         var newRight = newLeft + selectedSprite.Width;
         
-        Sprite.MakePointsInsideControl(PreviewGroupBox.AtlasImage, ref newLeft, ref newRight, ref tempTop, ref tempTop, selectedSprite.Width, 0);
+        Sprite.MakePointsInsideControl(SpriteSheetPreviewBox.AtlasImage, ref newLeft, ref newRight, ref tempTop, ref tempTop, selectedSprite.Width, 0);
         
         selectedSprite.Width = newWidth;
         
@@ -548,7 +548,7 @@ public partial class SpriteSheetEditorWindow : Window
         var newYPos = Canvas.GetTop(selectedSprite);
         var newBottomPos = newYPos + selectedSprite.Height;
         
-        Sprite.MakePointsInsideControl(PreviewGroupBox.AtlasImage, ref tempLeft, ref tempLeft, ref newYPos, ref newBottomPos, 0, selectedSprite.Height);
+        Sprite.MakePointsInsideControl(SpriteSheetPreviewBox.AtlasImage, ref tempLeft, ref tempLeft, ref newYPos, ref newBottomPos, 0, selectedSprite.Height);
         
         selectedSprite.Height = newHeight;
         
@@ -586,7 +586,7 @@ public partial class SpriteSheetEditorWindow : Window
     
     #region Event handlers for the buttons in the Edit tab
     
-    private void OnSelectionCanvasZoomChanged(double newValue)
+    private void OnSelectionCanvasZoomChanged(double newValue, bool forReset)
     {
         // set current zoom text
         var newValueInPercent = newValue * 100;
@@ -634,8 +634,8 @@ public partial class SpriteSheetEditorWindow : Window
             }
             
             // visually indicate that its loading
-            PreviewGroupBox.SelectionCanvas.Opacity = 0.5;
-            PreviewGroupBox.SelectionCanvas.IsEnabled = false;
+            SpriteSheetPreviewBox.SelectionCanvas.Opacity = 0.5;
+            SpriteSheetPreviewBox.SelectionCanvas.IsEnabled = false;
             
             var spriteInfoList = new List<RectPacker.PackingSpriteData>();
             
@@ -680,15 +680,15 @@ public partial class SpriteSheetEditorWindow : Window
             
             // select the last sprite so the user gets an idea of where the new sprites are
             var lastNewSpriteName = spriteInfoList.LastOrDefault().SpriteData.Name;
-            SelectedSprite = PreviewGroupBox.SpriteDatabase.Sprites.LastOrDefault(sprite => sprite.SpriteName == lastNewSpriteName);
+            SelectedSprite = SpriteSheetPreviewBox.SpriteDatabase.Sprites.LastOrDefault(sprite => sprite.SpriteName == lastNewSpriteName);
         }
         catch (Exception err)
         {
             Logger.Log("An exception has occured while trying to import the sprites!", Logger.LogLevel.Exception, err);
         }
         
-        PreviewGroupBox.SelectionCanvas.IsEnabled = true;
-        PreviewGroupBox.SelectionCanvas.Opacity = 1;
+        SpriteSheetPreviewBox.SelectionCanvas.IsEnabled = true;
+        SpriteSheetPreviewBox.SelectionCanvas.Opacity = 1;
     }
 
     private async void ExportAtlasPng(object? sender, RoutedEventArgs e)
@@ -727,7 +727,7 @@ public partial class SpriteSheetEditorWindow : Window
 
             var atlasImage = Image.Load<Rgba32>(m_AtlasImagePath);
 
-            var sprites = PreviewGroupBox.SpriteDatabase.Sprites;
+            var sprites = SpriteSheetPreviewBox.SpriteDatabase.Sprites;
             for (var i = 0; i < sprites.Count; i++)
             {
                 var sprite = sprites[i];
@@ -785,15 +785,15 @@ public partial class SpriteSheetEditorWindow : Window
                 return;
             }
             
-            PreviewGroupBox.SelectionCanvas.Opacity = 0.5;
-            PreviewGroupBox.SelectionCanvas.IsEnabled = false;
+            SpriteSheetPreviewBox.SelectionCanvas.Opacity = 0.5;
+            SpriteSheetPreviewBox.SelectionCanvas.IsEnabled = false;
             LoadAndSaveAtlasButton.IsEnabled = false;
             ResetButton.IsEnabled = false;
             
             var returnCode = await Task.Run(() => m_SpriteSheetManager?.Import(file.Path.LocalPath));
             
-            PreviewGroupBox.SelectionCanvas.Opacity = 1;
-            PreviewGroupBox.SelectionCanvas.IsEnabled = true;
+            SpriteSheetPreviewBox.SelectionCanvas.Opacity = 1;
+            SpriteSheetPreviewBox.SelectionCanvas.IsEnabled = true;
             LoadAndSaveAtlasButton.IsEnabled = true;
             ResetButton.IsEnabled = true;
 
@@ -830,15 +830,15 @@ public partial class SpriteSheetEditorWindow : Window
             if (file == null)
                 return;
             
-            PreviewGroupBox.SelectionCanvas.Opacity = 0.5;
-            PreviewGroupBox.SelectionCanvas.IsEnabled = false;
+            SpriteSheetPreviewBox.SelectionCanvas.Opacity = 0.5;
+            SpriteSheetPreviewBox.SelectionCanvas.IsEnabled = false;
             LoadAndSaveAtlasButton.IsEnabled = false;
             ResetButton.IsEnabled = false;
             
             var returnCode = await Task.Run(() => m_SpriteSheetManager?.Export(file.Path.LocalPath));
             
-            PreviewGroupBox.SelectionCanvas.Opacity = 1;
-            PreviewGroupBox.SelectionCanvas.IsEnabled = true;
+            SpriteSheetPreviewBox.SelectionCanvas.Opacity = 1;
+            SpriteSheetPreviewBox.SelectionCanvas.IsEnabled = true;
             LoadAndSaveAtlasButton.IsEnabled = true;
             ResetButton.IsEnabled = true;
 
@@ -956,7 +956,7 @@ public partial class SpriteSheetEditorWindow : Window
 
         AtlasNameBox.Text = m_LoadedAtlasName;
         
-        PreviewGroupBox.IsEnabled = true;
+        SpriteSheetPreviewBox.SetActive(true);
         LoadAndSaveAtlasButton.IsEnabled = true;
     }
 
@@ -988,7 +988,7 @@ public partial class SpriteSheetEditorWindow : Window
         // add new sprites to sprite list
         m_SpriteSheetManager?.Sprites.Clear();
         
-        foreach (var sprite in PreviewGroupBox.SpriteDatabase.Sprites)
+        foreach (var sprite in SpriteSheetPreviewBox.SpriteDatabase.Sprites)
         {
             var startX = Canvas.GetLeft(sprite);
             var endX = Canvas.GetRight(sprite);
@@ -1018,7 +1018,7 @@ public partial class SpriteSheetEditorWindow : Window
     
     private void LoadSprites()
     {
-        PreviewGroupBox.Reset();
+        SpriteSheetPreviewBox.Reset();
 
         // should never be null in this case but yeah
         if (m_SpriteSheetManager == null)
@@ -1027,7 +1027,7 @@ public partial class SpriteSheetEditorWindow : Window
         var sprites = m_SpriteSheetManager.Sprites;
 
         var isSmoothMoves = m_SpriteSheetManager is SmoothMovesSpriteSheetManager;
-        PreviewGroupBox.SpriteDatabase.IsSmoothMoves = isSmoothMoves;
+        SpriteSheetPreviewBox.SpriteDatabase.IsSmoothMoves = isSmoothMoves;
         
         foreach (var sprite in sprites)
         {
@@ -1050,11 +1050,11 @@ public partial class SpriteSheetEditorWindow : Window
             rect.RightClicked -= Sprite_RightClicked;
             rect.RightClicked += Sprite_RightClicked;
             
-            rect.InitHandles(PreviewGroupBox.SelectionCanvas, PreviewGroupBox.AtlasImage, isSmoothMoves);
+            rect.InitHandles(SpriteSheetPreviewBox.SelectionCanvas, SpriteSheetPreviewBox.AtlasImage, isSmoothMoves);
             rect.SetHandlesVisible(false);
             
-            PreviewGroupBox.SelectionCanvas.Children.Add(rect);
-            PreviewGroupBox.SpriteDatabase.Sprites.Add(rect);
+            SpriteSheetPreviewBox.SelectionCanvas.Children.Add(rect);
+            SpriteSheetPreviewBox.SpriteDatabase.Sprites.Add(rect);
         }
 
         OriginXInput.IsEnabled = isSmoothMoves;
@@ -1063,20 +1063,20 @@ public partial class SpriteSheetEditorWindow : Window
 
     private void LoadImage()
     {
-        PreviewGroupBox.AtlasImage.Source = new Bitmap(m_AtlasImagePath);
+        SpriteSheetPreviewBox.AtlasImage.Source = new Bitmap(m_AtlasImagePath);
 
         // set the width and height properties of the canvas so the scrollbars show up
         var (width, height) = CommonUtils.GetImageResolution(m_AtlasImagePath);
         
-        PreviewGroupBox.SelectionCanvas.Width = width;
-        PreviewGroupBox.SelectionCanvas.Height = height;
+        SpriteSheetPreviewBox.SelectionCanvas.Width = width;
+        SpriteSheetPreviewBox.SelectionCanvas.Height = height;
 
-        PreviewGroupBox.Acrylic.Width = width;
-        PreviewGroupBox.Acrylic.Height = height;
+        SpriteSheetPreviewBox.Acrylic.Width = width;
+        SpriteSheetPreviewBox.Acrylic.Height = height;
 
-        PreviewGroupBox.SelectionCanvas.Init();
+        SpriteSheetPreviewBox.SelectionCanvas.Init();
 
-        PreviewGroupBox.Acrylic.SetActive(true);
+        SpriteSheetPreviewBox.Acrylic.SetActive(true);
         
         EditTab.IsEnabled = true;
         
@@ -1117,7 +1117,7 @@ public partial class SpriteSheetEditorWindow : Window
         LoadAndSaveAtlasButton.Click -= LoadAtlas;
         LoadAndSaveAtlasButton.Click -= SaveAtlas;
         
-        PreviewGroupBox.SpriteDatabase.Sprites.ForEach(DeRegisterRectEventHandlers);
+        SpriteSheetPreviewBox.SpriteDatabase.Sprites.ForEach(DeRegisterRectEventHandlers);
         
         // reset fields
         m_AtlasImagePath = default;
@@ -1126,7 +1126,8 @@ public partial class SpriteSheetEditorWindow : Window
         m_SpriteSheetManager = default;
         
         // reset ui
-        PreviewGroupBox.Reset();
+        SpriteSheetPreviewBox.Reset();
+        SpriteSheetPreviewBox.SetActive(false);
         m_StateManager.Reset();
 
         ProgressService.Reset(true);

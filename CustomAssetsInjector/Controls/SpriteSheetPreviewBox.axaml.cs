@@ -12,7 +12,7 @@ using CustomAssetsInjector.Utils;
 
 namespace CustomAssetsInjector.Controls;
 
-public class SpriteSheetPreviewBox : GroupBox.Avalonia.Controls.GroupBox
+public partial class SpriteSheetPreviewBox : UserControl
 {
     private struct ScrollViewerInfo
     {
@@ -68,48 +68,11 @@ public class SpriteSheetPreviewBox : GroupBox.Avalonia.Controls.GroupBox
 
     public Action<Sprite>? SpriteCreated;
 
-    private readonly ScrollViewer m_CanvasScroller;
-    
-    public readonly ZoomCanvas SelectionCanvas;
-
-    public readonly Image AtlasImage;
-    
-    public ExperimentalAcrylicBorder Acrylic;
-
     public SpriteDatabase SpriteDatabase = new();
     
     public SpriteSheetPreviewBox()
     {
-        // initialize ui
-        m_CanvasScroller = new ScrollViewer
-        {
-            HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
-            VerticalScrollBarVisibility = ScrollBarVisibility.Auto
-        };
-
-        SelectionCanvas = new ZoomCanvas();
-        
-        m_CanvasScroller.Content = SelectionCanvas;
-        
-        AtlasImage = new Image
-        {
-            Stretch = Stretch.None
-        };
-
-        Application.Current!.TryFindResource("BlackAcrylicMaterial", out var acrylicMaterial);
-        
-        Acrylic = new ExperimentalAcrylicBorder
-        {
-            IsHitTestVisible = false,
-            Material = acrylicMaterial as ExperimentalAcrylicMaterial
-        };
-        
-        Acrylic.SetActive(false);
-        
-        SelectionCanvas.Children.Add(Acrylic);
-        SelectionCanvas.Children.Add(AtlasImage);
-
-        this.Content = m_CanvasScroller;
+        InitializeComponent();
         
         this.PointerPressed += SpriteSheetPreviewBox_PointerPressed;
         this.PointerReleased += SpriteSheetPreviewBox_PointerReleased;
@@ -129,12 +92,12 @@ public class SpriteSheetPreviewBox : GroupBox.Avalonia.Controls.GroupBox
 
         m_ScrollerInfoBeforeZoom = new ScrollViewerInfo
         {
-            ScrollBarMax = m_CanvasScroller.ScrollBarMaximum,
-            ScrollBarPos = m_CanvasScroller.Offset
+            ScrollBarMax = CanvasScroller.ScrollBarMaximum,
+            ScrollBarPos = CanvasScroller.Offset
         };
     }
 
-    private void OnSelectionCanvasZoomChanged(double newValue)
+    private void OnSelectionCanvasZoomChanged(double newValue, bool forReset)
     {
         // set scrollbar pos so we keep the current scroll position
         if (m_ScrollerInfoBeforeZoom == null)
@@ -147,19 +110,25 @@ public class SpriteSheetPreviewBox : GroupBox.Avalonia.Controls.GroupBox
         
         var newXScrollPos = CommonUtils.MapValues(info.ScrollBarPos.X, // val
             0, info.ScrollBarMax.X, // in
-            0, m_CanvasScroller.ScrollBarMaximum.X); // out
+            0, CanvasScroller.ScrollBarMaximum.X); // out
         
         var newYScrollPos = CommonUtils.MapValues(info.ScrollBarPos.Y, // val
             0, info.ScrollBarMax.Y, // in
-            0, m_CanvasScroller.ScrollBarMaximum.Y); // out
+            0, CanvasScroller.ScrollBarMaximum.Y); // out
 
         // zoom into the middle by default
         if (double.IsNaN(newXScrollPos))
-            newXScrollPos = m_CanvasScroller.ScrollBarMaximum.X / 2;
+            newXScrollPos = CanvasScroller.ScrollBarMaximum.X / 2;
         if (double.IsNaN(newYScrollPos))
-            newYScrollPos = m_CanvasScroller.ScrollBarMaximum.Y / 2;
+            newYScrollPos = CanvasScroller.ScrollBarMaximum.Y / 2;
+
+        if (forReset)
+        {
+            newXScrollPos = 0;
+            newYScrollPos = 0;
+        }
         
-        m_CanvasScroller.Offset = new Vector(newXScrollPos, newYScrollPos);
+        CanvasScroller.Offset = new Vector(newXScrollPos, newYScrollPos);
     }
 
     public void Reset()
@@ -254,7 +223,6 @@ public class SpriteSheetPreviewBox : GroupBox.Avalonia.Controls.GroupBox
         }
         else
         {
-            
             if (m_ShouldMove)
             {
                 // ctrl has been released, but last move event it was pressed (m_ShouldMove was true)

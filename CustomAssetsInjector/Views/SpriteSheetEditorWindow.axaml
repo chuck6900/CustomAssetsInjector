@@ -22,8 +22,9 @@
                 
                 <!-- content -->
                 
-                <controls:SpriteSheetPreviewBox IsEnabled="False" Name="PreviewGroupBox" Grid.Column="0" Header="Preview" Theme="{StaticResource GroupBoxClassic}" Margin="10">
-                </controls:SpriteSheetPreviewBox>
+                <gb:GroupBox Grid.Column="0" Name="PreviewGroupBox" Header="Preview" Theme="{StaticResource GroupBoxClassic}" Margin="10">
+                        <controls:SpriteSheetPreviewBox Name="SpriteSheetPreviewBox" IsEnabled="False" IsVisible="False" />
+                </gb:GroupBox>
                 
                 <gb:GroupBox Grid.Column="1" Header="Properties" Theme="{StaticResource GroupBoxClassic}" Margin="10">
                         <Panel>
@@ -121,11 +122,14 @@
                                                 </TabItem>
                                                 
                                                 <TabItem Name="CreateTab" IsEnabled="True" Header="Create">
-                                                        <Grid ColumnDefinitions="* * *">
-                                                                <Button Grid.Column="0" Name="CreateNewAtlasButton" Margin="3" CornerRadius="3">New atlas</Button>
-                                                                <Button Grid.Column="1" Name="CreateNewHeadgearButton" Margin="3" CornerRadius="3">New headgear</Button>
-                                                                <Button Grid.Column="2" Name="CreateNewWeaponButton" Margin="3" CornerRadius="3">New weapon</Button>
-                                                        </Grid>
+                                                        <StackPanel>
+                                                                <!-- create buttons -->
+                                                                <Grid ColumnDefinitions="* * *">
+                                                                        <Button Grid.Column="0" Name="CreateNewAtlasButton" Margin="3" CornerRadius="3">New atlas</Button>
+                                                                        <Button Grid.Column="1" Name="CreateNewHeadgearButton" Margin="3" CornerRadius="3">New headgear</Button>
+                                                                        <Button Grid.Column="2" Name="CreateNewWeaponButton" Margin="3" CornerRadius="3">New weapon</Button>
+                                                                </Grid>
+                                                        </StackPanel>
                                                 </TabItem>
                                                 
                                                 <TabItem Name="LogsTab" Header="Logs">
