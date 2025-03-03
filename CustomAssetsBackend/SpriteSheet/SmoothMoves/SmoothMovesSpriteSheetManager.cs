@@ -88,7 +88,10 @@ public class SmoothMovesSpriteSheetManager(string il2CppFolderPath) : SpriteShee
 
                 var originPoint = new Vector2(newX, newY);
 
-                Sprites.Add(new SpriteData
+                var guid = behaviourBase["textureGUIDs.Array"][i].AsString;
+                var path = behaviourBase["texturePaths.Array"][i].AsString;
+
+                Sprites.Add(new SmoothMovesSpriteData
                 {
                     Name = spriteName,
 
@@ -101,7 +104,10 @@ public class SmoothMovesSpriteSheetManager(string il2CppFolderPath) : SpriteShee
                     Width = width,
                     Height = height,
 
-                    OriginPoint = originPoint
+                    OriginPoint = originPoint,
+                    
+                    TextureGuid = guid,
+                    TexturePath = path
                 });
             }
             
@@ -121,6 +127,12 @@ public class SmoothMovesSpriteSheetManager(string il2CppFolderPath) : SpriteShee
     
     public override CommonUtils.ReturnCode Save()
     {
+        if (Sprites.Count == 0 || !Sprites.All(s => s is SmoothMovesSpriteData))
+        {
+            Logger.Log($"No sprites loaded or a sprite is not of type {nameof(SmoothMovesSpriteData)}!");
+            return CommonUtils.ReturnCode.NoAtlasLoaded;
+        }
+        
         var monoBehaviourAsset = GetCachedAssetOfType(UnityAsset.UnityObjectType.MonoBehaviour);
         var texture2dAsset = GetCachedAssetOfType(UnityAsset.UnityObjectType.Texture2D);
         var materialAsset = GetCachedAssetOfType(UnityAsset.UnityObjectType.Material);
@@ -138,16 +150,16 @@ public class SmoothMovesSpriteSheetManager(string il2CppFolderPath) : SpriteShee
         var textureBaseField = am.GetBaseField(textureFileInst, textureAssetInfo);
             
         Logger.Log("Replacing atlas image..");
-
-        var imagePath = CommonUtils.AtlasImagePath;
         
-        var success = TexturePlugin.TextureMain.ReplaceTexture(textureBaseField, imagePath, out var err);
+        var success = TexturePlugin.TextureMain.ReplaceTexture(textureBaseField, CommonUtils.AtlasImagePath, out var err);
 
-        if (!success)
+        if (!success || err != null)
         {
             Logger.Log("Failed to replace the atlas image!", Logger.LogLevel.Exception, err);
             return CommonUtils.ReturnCode.TextureReplaceFailed;
         }
+        
+        SaveAssetsFile(am, textureFileInst, textureAssetInfo, textureBaseField, texture2dAsset.Path);
         
         Logger.Log("Replacing atlas image.. Done!");
 
@@ -180,9 +192,9 @@ public class SmoothMovesSpriteSheetManager(string il2CppFolderPath) : SpriteShee
         textureNames.Children.Clear();
         texturePaths.Children.Clear();
 
-        var (resWidth, resHeight) = CommonUtils.GetImageResolution(imagePath);
+        var (resWidth, resHeight) = CommonUtils.GetImageResolution(CommonUtils.AtlasImagePath);
         
-        foreach (var sprite in this.Sprites)
+        foreach (SmoothMovesSpriteData sprite in this.Sprites)
         {
             var uvTemplate = ValueBuilder.DefaultValueFieldFromArrayTemplate(uvs);
             var guidTemplate = ValueBuilder.DefaultValueFieldFromArrayTemplate(textureGuids);
@@ -200,7 +212,7 @@ public class SmoothMovesSpriteSheetManager(string il2CppFolderPath) : SpriteShee
             uvs.Children.Add(uvTemplate);
             
             // guids
-            guidTemplate.AsString = CreateNewSmoothMovesGuid();
+            guidTemplate.AsString = sprite.TextureGuid ?? CreateNewSmoothMovesGuid();
             
             textureGuids.Children.Add(guidTemplate);
             
@@ -222,48 +234,50 @@ public class SmoothMovesSpriteSheetManager(string il2CppFolderPath) : SpriteShee
             textureNames.Children.Add(nameTemplate);
             
             // texture paths
-            pathTemplate.AsString = $"Assets/Heroic/CustomAssetInjector/{sprite.Name}.png";
+            pathTemplate.AsString = sprite.TexturePath ?? $"Assets/Heroic/CustomAssetsInjector/{sprite.Name}.png";
             
             texturePaths.Children.Add(pathTemplate);
         }
         
         // regenerate lastBuildID because why not
         behaviourBase["lastBuildID"].AsString = DateTime.Now.ToString("yyyyMMddHHmmss") + new Random().Next(0, 1024);
-        
-        behaviourInfo.SetNewData(behaviourBase);
-        
-        var newMbAssetPath = Path.GetTempFileName();
-            
-        using (var writer = new AssetsFileWriter(newMbAssetPath))
-        {
-            monoBehaviourFile.Write(writer);
-        }
-            
-        am.UnloadAll();
-            
-        File.Replace(newMbAssetPath, monoBehaviourAsset.Path, null);
+
+        SaveAssetsFile(am, monoBehaviourFileInst, behaviourInfo, behaviourBase, monoBehaviourAsset.Path);
             
         Logger.Log("Reconstructing MonoBehaviour.. Done!");
         
         return CommonUtils.ReturnCode.Success;
     }
 
+    public struct HeadgearSprite
+    {
+        public SpriteData Data { get; set; }
+        public Vector2 Position { get; set; }
+        public Vector2 Scale { get; set; }
+    }
+
     public struct Headgear
     {
         public string Name { get; set; }
-        public SpriteData? FrontSprite { get; set; }
-        public SpriteData? BackSprite { get; set; }
+        public HeadgearSprite FrontSprite { get; set; }
+        public HeadgearSprite BackSprite { get; set; }
     }
 
-    private void CreateHeadgear(Headgear headgear, string outputPath, string obbPath)
+    public void CreateHeadgear(Headgear headgear, string obbPath)
     {
         // Logger.Log($"Currently creating headgear for: '{headgear.HeadgearName}'");
         using var headgearTemplateStream = new MemoryStream(Resources.HeadgearTemplate);
-        var destPath = Path.Combine(outputPath, headgear.Name);
+        var destPath = Path.Combine(obbPath, headgear.Name);
 
         var am = CommonUtils.InitAssetManager(obbPath);
         
+        var globalMetadataPath = Path.Combine(this.Il2CppFolderPath, "global-metadata.dat");
+        var binaryPath = Path.Combine(this.Il2CppFolderPath, "il2cpp.binary");
+            
+        am.MonoTempGenerator = new Cpp2IlTempGenerator(globalMetadataPath, binaryPath);
+        
         var headgearAsset = am.LoadAssetsFile(headgearTemplateStream, destPath);
+        
         var frontAssetInfo = headgearAsset.file.GetAssetInfo(1);
         var backAssetInfo = headgearAsset.file.GetAssetInfo(2);
         var mainAssetInfo = headgearAsset.file.GetAssetInfo(3);
@@ -274,10 +288,10 @@ public class SmoothMovesSpriteSheetManager(string il2CppFolderPath) : SpriteShee
         mainAssetBf["m_Name"].AsString = headgear.Name;
         mainAssetInfo.SetNewData(mainAssetBf);
         
-        Logger.Log("Adding dependencies..");
-
         var materialAsset = GetCachedAssetOfType(UnityAsset.UnityObjectType.Material);
         var monoBehaviourAsset = GetCachedAssetOfType(UnityAsset.UnityObjectType.MonoBehaviour);
+        
+        Logger.Log("Adding dependencies..");
 
         var dependencies = headgearAsset.file.Metadata.Externals;
         
@@ -311,111 +325,143 @@ public class SmoothMovesSpriteSheetManager(string il2CppFolderPath) : SpriteShee
             dependencies.Add(mbDependency);
         }
         
-        var matFileId = dependencies.IndexOf(materialDependency);
-        var mbFileId = dependencies.IndexOf(mbDependency);
+        // we add 1 to the index because Metadata.Externals' 0th element = file id 1 because file id 0 = same assets file
+        var matFileId = dependencies.IndexOf(materialDependency) + 1;
+        var mbFileId = dependencies.IndexOf(mbDependency) + 1;
 
         Logger.Log("Adding dependencies.. Done!");
-            
-        if (headgear.FrontSprite != null)
+
+        // front scope
         {
-            Logger.Log("Setting references on Front GameObject..");
-        
+            Logger.Log("Updating front GameObject..");
+            
+            // set transform stuff
+            var transformPPtr = frontBf["m_Component.Array"][0]["component"];
+            var transformAsset = am.GetExtAsset(headgearAsset, transformPPtr);
+            var transformBf = transformAsset.baseField;
+            transformBf["m_LocalPosition.x"].AsFloat = headgear.FrontSprite.Position.X;
+            transformBf["m_LocalPosition.y"].AsFloat = headgear.FrontSprite.Position.Y;
+            
+            transformBf["m_LocalScale.x"].AsFloat = headgear.FrontSprite.Scale.X;
+            transformBf["m_LocalScale.y"].AsFloat = headgear.FrontSprite.Scale.Y;
+            
+            transformAsset.info.SetNewData(transformBf);
+            
+            // set chmeshsprite stuff
             var monoBehaviourPPtr = frontBf["m_Component.Array"][1]["component"];
             var chMeshSprite = am.GetExtAsset(headgearAsset, monoBehaviourPPtr);
             var chMeshSpriteBf = chMeshSprite.baseField;
-            chMeshSpriteBf["m_SpriteName"].AsString = headgear.FrontSprite.Name;
-            chMeshSpriteBf["m_Width"].AsInt = (int)headgear.FrontSprite.Width;
-            chMeshSpriteBf["m_Height"].AsInt = (int)headgear.FrontSprite.Height;
-        
+            chMeshSpriteBf["m_SpriteName"].AsString = headgear.FrontSprite.Data.Name;
+            chMeshSpriteBf["m_Width"].AsInt = (int)headgear.FrontSprite.Data.Width;
+            chMeshSpriteBf["m_Height"].AsInt = (int)headgear.FrontSprite.Data.Height;
+
             chMeshSpriteBf["m_SmoothMovesAtlas"]["m_FileID"].AsInt = mbFileId;
             chMeshSpriteBf["m_SmoothMovesAtlas"]["m_PathID"].AsLong = monoBehaviourAsset.PathId;
             chMeshSprite.info.SetNewData(chMeshSpriteBf);
-        
+
             var materialPPtr = frontBf["m_Component.Array"][3]["component"];
             var meshRenderer = am.GetExtAsset(headgearAsset, materialPPtr);
             var meshRendererBf = meshRenderer.baseField;
-        
+
             meshRendererBf["m_Materials.Array"][0]["m_FileID"].AsInt = matFileId;
             meshRendererBf["m_Materials.Array"][0]["m_PathID"].AsLong = materialAsset.PathId;
-        
+
             meshRenderer.info.SetNewData(meshRendererBf);
-            Logger.Log("Setting references on Front GameObject.. Done!");
+            Logger.Log("Updating front GameObject.. Done!");
         }
-        if (headgear.BackSprite != null)
+
+        // back scope
         {
-            Logger.Log("Setting references on Back GameObject..");
-        
+            Logger.Log("Updating back GameObject..");
+            
+            // set transform stuff
+            var transformPPtr = backBf["m_Component.Array"][0]["component"];
+            var transformAsset = am.GetExtAsset(headgearAsset, transformPPtr);
+            var transformBf = transformAsset.baseField;
+            transformBf["m_LocalPosition.x"].AsFloat = headgear.BackSprite.Position.X;
+            transformBf["m_LocalPosition.y"].AsFloat = headgear.BackSprite.Position.Y;
+            
+            transformBf["m_LocalScale.x"].AsFloat = headgear.BackSprite.Scale.X;
+            transformBf["m_LocalScale.y"].AsFloat = headgear.BackSprite.Scale.Y;
+            
+            transformAsset.info.SetNewData(transformBf);
+            
+            // set chmeshsprite stuff
             var monoBehaviourPPtr = backBf["m_Component.Array"][1]["component"];
             var chMeshSprite = am.GetExtAsset(headgearAsset, monoBehaviourPPtr);
             var chMeshSpriteBf = chMeshSprite.baseField;
-            chMeshSpriteBf["m_SpriteName"].AsString = headgear.BackSprite.Name;
-            chMeshSpriteBf["m_Width"].AsInt = (int)headgear.BackSprite.Width;
-            chMeshSpriteBf["m_Height"].AsInt = (int)headgear.BackSprite.Height;
-        
+            chMeshSpriteBf["m_SpriteName"].AsString = headgear.BackSprite.Data.Name;
+            chMeshSpriteBf["m_Width"].AsInt = (int)headgear.BackSprite.Data.Width;
+            chMeshSpriteBf["m_Height"].AsInt = (int)headgear.BackSprite.Data.Height;
+
             chMeshSpriteBf["m_SmoothMovesAtlas"]["m_FileID"].AsInt = mbFileId;
             chMeshSpriteBf["m_SmoothMovesAtlas"]["m_PathID"].AsLong = monoBehaviourAsset.PathId;
             chMeshSprite.info.SetNewData(chMeshSpriteBf);
-        
+
             var materialPPtr = backBf["m_Component.Array"][3]["component"];
             var meshRenderer = am.GetExtAsset(headgearAsset, materialPPtr);
             var meshRendererBf = meshRenderer.baseField;
-        
+
             meshRendererBf["m_Materials.Array"][0]["m_FileID"].AsInt = matFileId;
             meshRendererBf["m_Materials.Array"][0]["m_PathID"].AsLong = materialAsset.PathId;
-        
+
             meshRenderer.info.SetNewData(meshRendererBf);
-            Logger.Log("Setting references on Back GameObject.. Done!");
+            Logger.Log("Updating back GameObject.. Done!");
         }
-        Logger.Log("Saving prefab..");
+            
+        Logger.Log("Assigning AssetID to prefab..");
+
+        var rootSceneAssetPath = Path.Combine(obbPath, "level1");
+        var rootSceneAsset = am.LoadAssetsFile(rootSceneAssetPath);
+            
+        // chraeap = character high-res and equipment asset provider (headgear and equipment)
         
-        File.Delete(destPath);
+        var chraeapInfo = rootSceneAsset.file.GetAssetInfo(120); // un-hardcode
+        var chraeapBf = am.GetBaseField(rootSceneAsset, chraeapInfo);
+
+        if (chraeapBf["AssetInfos.Array"].Children.Any(info => info["NameId"].AsString == headgear.Name))
+        {
+            // headgear with same name already exists
+            Logger.Log("A headgear with this name already exists! Unable to create headgear.");
+            return;
+        }
+        
         using (var writer = new AssetsFileWriter(destPath))
         {
             headgearAsset.file.Write(writer);
         }
-        am.UnloadAll();
-            
-        Logger.Log("Saving prefab.. Done");
-            
-        Logger.Log("Assigning AssetID to prefab..");
+        am.UnloadAssetsFile(headgearAsset);
 
-        var rootSceneAssetPath = Path.Combine(obbPath, "assets/bin/Data/level1");
-        var rootSceneAsset = am.LoadAssetsFile(rootSceneAssetPath);
-        var headgearDependencyFileId = rootSceneAsset.file.Metadata.Externals.Count + 1;
-            
-        rootSceneAsset.file.Metadata.Externals.Add(new AssetsFileExternal
+        var headgearDependency = new AssetsFileExternal
         {
             VirtualAssetPathName = string.Empty,
             PathName = Path.GetFileName(destPath),
             OriginalPathName = Path.GetFileName(destPath),
             Guid = default,
             Type = AssetsFileExternalType.Normal
-        });
-            
-        // chraeap = character high-res and equipment asset provider (headgear and equipment)
-        
-        var chraeapInfo = rootSceneAsset.file.GetAssetInfo(120); // un-hardcode
-        var chraeapBf = am.GetBaseField(rootSceneAsset, chraeapInfo);
+        };
+        if (!rootSceneAsset.file.Metadata.Externals.Contains(headgearDependency))
+            rootSceneAsset.file.Metadata.Externals.Add(headgearDependency);
         
         var editorAssetInfo = ValueBuilder.DefaultValueFieldFromArrayTemplate(chraeapBf["AssetInfos.Array"]);
         editorAssetInfo["NameId"].AsString = headgear.Name;
-        editorAssetInfo["AssetLink"]["m_FileID"].AsInt = headgearDependencyFileId;
+        editorAssetInfo["AssetLink"]["m_FileID"].AsInt = rootSceneAsset.file.Metadata.Externals.IndexOf(headgearDependency) + 1;
         editorAssetInfo["AssetLink"]["m_PathID"].AsLong = 3;
-        editorAssetInfo["AssetLoadingType"].AsInt = 1; // memory
+        editorAssetInfo["AssetLoadingType"].AsInt = (int)LoadingType.FromMemory;
         
         chraeapBf["AssetInfos.Array"].Children.Add(editorAssetInfo);
             
-        chraeapInfo.SetNewData(chraeapBf);
-
-        var newRootSceneAssetPath = Path.GetTempFileName();
-        using (var writer = new AssetsFileWriter(newRootSceneAssetPath))
-        {
-            rootSceneAsset.file.Write(writer);
-        }
-        am.UnloadAll();
-        File.Replace(newRootSceneAssetPath, rootSceneAssetPath, null);
+        SaveAssetsFile(am, rootSceneAsset, chraeapInfo, chraeapBf, rootSceneAssetPath);
         Logger.Log("Assigning AssetID to prefab.. Done!");
         Logger.Log($"Headgear creation for '{headgear.Name}' done.");
+    }
+    
+    private enum LoadingType
+    {
+        FromResources,
+        FromMemory,
+        FromBundle,
+        FromStreamedBundle
     }
 
     /// <summary>

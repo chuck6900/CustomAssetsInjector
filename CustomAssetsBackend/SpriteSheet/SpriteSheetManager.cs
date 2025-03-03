@@ -37,6 +37,22 @@ public abstract class SpriteSheetManager(string il2CppFolderPath)
         textureImage.Mutate(i => i.Flip(FlipMode.Vertical)); // flip on x-axis
         textureImage.SaveAsPng(imagePath);
     }
+    
+    public static void SaveAssetsFile(AssetsManager am, AssetsFileInstance file, AssetFileInfo info, AssetTypeValueField baseField, string destPath)
+    {
+        info.SetNewData(baseField);
+        
+        var newMbAssetPath = Path.GetTempFileName();
+            
+        using (var writer = new AssetsFileWriter(newMbAssetPath))
+        {
+            file.file.Write(writer);
+        }
+
+        am.UnloadAssetsFile(file);
+            
+        File.Replace(newMbAssetPath, destPath, null);
+    }
 
     public abstract CommonUtils.ReturnCode Load();
 

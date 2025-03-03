@@ -1,0 +1,17 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="500"
+             x:Class="CustomAssetsInjector.Controls.SpritePreviewer">
+    <StackPanel>
+        <Label Name="SpriteSelectionText" Margin="5 3">Select a sprite:</Label>
+        <ComboBox Margin="5" CornerRadius="3" Name="SpriteSelectionComboBox">
+            <ComboBoxItem IsEnabled="False">No sprites loaded</ComboBoxItem>
+        </ComboBox>
+        
+        <Label Name="PreviewText" Margin="5">Preview:</Label>
+        <Image Name="PreviewImage" Stretch="None" />
+        
+    </StackPanel>
+</UserControl>

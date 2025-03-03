@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using AssetsTools.NET;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -15,6 +14,7 @@ using Avalonia.Threading;
 using CustomAssetsBackend.Classes;
 using CustomAssetsBackend.Misc;
 using CustomAssetsBackend.SpriteSheet;
+using CustomAssetsBackend.SpriteSheet.NGUI;
 using CustomAssetsBackend.SpriteSheet.SmoothMoves;
 using CustomAssetsInjector.Actions;
 using CustomAssetsInjector.Controls;
@@ -59,11 +59,32 @@ public partial class SpriteSheetEditorWindow : Window
                 SetMaxSizeControlValues();
                 UpdateSizeControlValues(m_SelectedSprite);
                 RegisterRectEventHandlers(m_SelectedSprite);
+                
+                SettingsTab.IsEnabled = true;
+                SpriteSettingsTabControl.SelectedIndex = IndexOfSpriteSettingsTab;
+                SpriteNameInput.Text = m_SelectedSprite.SpriteName;
             }
         }
     }
 
     private SpriteSheetManager? m_SpriteSheetManager;
+    
+    private void OpenHeadgearCreationInfo(object? sender, RoutedEventArgs e)
+    {
+        var window = new HeadgearCreationWindow();
+        window.ShowDialog(this);
+        
+        if (m_SpriteSheetManager is SmoothMovesSpriteSheetManager && !string.IsNullOrEmpty(m_AtlasImagePath))
+            window.SetupSpritePreviews(m_SpriteSheetManager.Sprites, m_AtlasImagePath);
+    }
+    
+    public void CreateHeadgear(SmoothMovesSpriteSheetManager.Headgear headgear)
+    {
+        if (m_SpriteSheetManager is not SmoothMovesSpriteSheetManager smManager)
+            return;
+        
+        smManager.CreateHeadgear(headgear, AppBundleManager.ObbExtractFolderPath);
+    }
 
     public SpriteSheetEditorWindow()
     {
@@ -122,6 +143,13 @@ public partial class SpriteSheetEditorWindow : Window
         SpriteSheetPreviewBox.SelectionCanvas.ZoomChanged += OnSelectionCanvasZoomChanged;
         ZoomOutButton.Click += delegate { SpriteSheetPreviewBox.SelectionCanvas.ZoomOut(); };
         ResetZoomButton.Click += delegate { SpriteSheetPreviewBox.SelectionCanvas.ResetZoom(); };
+        
+        // create buttons
+        CreateNewAtlasButton.IsEnabled = false;
+        CreateNewHeadgearButton.IsEnabled = false;
+        CreateNewWeaponButton.IsEnabled = false;
+        
+        CreateNewHeadgearButton.Click += OpenHeadgearCreationInfo;
         
         // keybind handling
         this.KeyDown += OnKeyDown;
@@ -337,9 +365,6 @@ public partial class SpriteSheetEditorWindow : Window
                 spriteHeight = (int)sprite.Height;
             });
 
-            if (spriteWidth < 10 || spriteHeight < 10)
-                continue;
-
             var cropRect = new Rectangle(xPos, yPos, spriteWidth, spriteHeight);
                     
             var croppedImage = atlasImage.Clone();
@@ -359,7 +384,7 @@ public partial class SpriteSheetEditorWindow : Window
             spriteInfoList.Add(spriteInfo);
         }
 
-        return RectPacker.PackRects(spriteInfoList, m_AtlasImagePath, 2);
+        return RectPacker.PackImages(spriteInfoList, m_AtlasImagePath, 2);
     }
     
     #endregion
@@ -370,6 +395,7 @@ public partial class SpriteSheetEditorWindow : Window
     {
         var rightClickedSprite = (Sprite)sender!;
         
+        SelectedSprite?.DestroyHandles();
         if (SelectedSprite != null && SelectedSprite == rightClickedSprite)
         {
             SettingsTab.IsEnabled = false;
@@ -378,11 +404,10 @@ public partial class SpriteSheetEditorWindow : Window
             SelectedSprite = null;
             return;
         }
-
-        SettingsTab.IsEnabled = true;
-        SpriteSettingsTabControl.SelectedIndex = IndexOfSpriteSettingsTab;
+        
         SelectedSprite = rightClickedSprite;
-        SpriteNameInput.Text = rightClickedSprite.SpriteName;
+        SelectedSprite.InitHandles(SpriteSheetPreviewBox.SelectionCanvas, SpriteSheetPreviewBox.AtlasImage, SpriteSheetPreviewBox.SpriteDatabase.IsSmoothMoves);
+        SelectedSprite.SetHandlesVisible(true);
     }
     
     private void PreviewGroupBox_SpriteCreated(Sprite createdSprite)
@@ -566,7 +591,11 @@ public partial class SpriteSheetEditorWindow : Window
         var selectedSprite = SelectedSprite!;
         
         var newOriginPointX = (float?)e.NewValue ?? selectedSprite.OriginPoint.X;
-        selectedSprite.OriginPoint.X = newOriginPointX;
+        
+        var origin = selectedSprite.OriginPoint;
+        origin.X = newOriginPointX;
+        selectedSprite.OriginPoint = origin;
+        
         selectedSprite.RepositionHandles();
     }
     
@@ -578,7 +607,11 @@ public partial class SpriteSheetEditorWindow : Window
         var selectedSprite = SelectedSprite!;
         
         var newOriginPointY = (float?)e.NewValue ?? selectedSprite.OriginPoint.Y;
-        selectedSprite.OriginPoint.Y = newOriginPointY;
+        
+        var origin = selectedSprite.OriginPoint;
+        origin.Y = newOriginPointY;
+        selectedSprite.OriginPoint = origin;
+        
         selectedSprite.RepositionHandles();
     }
     
@@ -979,14 +1012,14 @@ public partial class SpriteSheetEditorWindow : Window
         }
         
         Logger.Log("Successfully saved the atlas.");
-
-        // todo: headgear stuff
     }
 
     private void SaveSprites()
     {
         // add new sprites to sprite list
         m_SpriteSheetManager?.Sprites.Clear();
+
+        var isSmoothMoves = m_SpriteSheetManager is SmoothMovesSpriteSheetManager;
         
         foreach (var sprite in SpriteSheetPreviewBox.SpriteDatabase.Sprites)
         {
@@ -997,23 +1030,38 @@ public partial class SpriteSheetEditorWindow : Window
             var startY = Canvas.GetTop(sprite);
             var endY = Canvas.GetBottom(sprite);
             var height = endY - startY;
+
+            SpriteData spriteData = isSmoothMoves ? new SmoothMovesSpriteData() : new NGUISpriteData();
+            spriteData.Name = sprite.SpriteName;
+            spriteData.StartX = startX;
+            spriteData.EndX = endX;
+            spriteData.StartY = startY;
+            spriteData.EndY = endY;
+            spriteData.Width = width;
+            spriteData.Height = height;
+            spriteData.OriginPoint = sprite.OriginPoint;
+            
+            if (spriteData is NGUISpriteData nguiSpriteData)
+                AddNGUISpriteDataFields(nguiSpriteData, sprite);
                 
-            m_SpriteSheetManager?.Sprites.Add(new SpriteData
-            {
-                Name = sprite.SpriteName,
-                
-                StartX = startX,
-                EndX = endX,
-                
-                StartY = startY,
-                EndY = endY,
-                
-                Width = width,
-                Height = height,
-                
-                OriginPoint = sprite.OriginPoint
-            });
+            m_SpriteSheetManager?.Sprites.Add(spriteData);
         }
+    }
+
+    private void AddNGUISpriteDataFields(NGUISpriteData spriteData, Sprite sprite)
+    {
+        if (sprite.SpriteData is not NGUISpriteData nguiSpriteData)
+            return;
+
+        spriteData.BorderLeft = nguiSpriteData.BorderLeft;
+        spriteData.BorderRight = nguiSpriteData.BorderRight;
+        spriteData.BorderTop = nguiSpriteData.BorderTop;
+        spriteData.BorderBottom = nguiSpriteData.BorderBottom;
+        
+        spriteData.PaddingLeft = nguiSpriteData.PaddingLeft;
+        spriteData.PaddingRight = nguiSpriteData.PaddingRight;
+        spriteData.PaddingTop = nguiSpriteData.PaddingTop;
+        spriteData.PaddingBottom = nguiSpriteData.PaddingBottom;
     }
     
     private void LoadSprites()
@@ -1031,27 +1079,10 @@ public partial class SpriteSheetEditorWindow : Window
         
         foreach (var sprite in sprites)
         {
-            var width = sprite.Width;
-            var height = sprite.Height;
-            
-            var rect = new Sprite(sprite.Name)
-            {
-                Width = width,
-                Height = height,
-                
-                OriginPoint = sprite.OriginPoint
-            };
-            
-            Canvas.SetLeft(rect, sprite.StartX);
-            Canvas.SetTop(rect, sprite.StartY);
-            Canvas.SetRight(rect, sprite.EndX);
-            Canvas.SetBottom(rect, sprite.EndY);
+            var rect = new Sprite(sprite);
 
             rect.RightClicked -= Sprite_RightClicked;
             rect.RightClicked += Sprite_RightClicked;
-            
-            rect.InitHandles(SpriteSheetPreviewBox.SelectionCanvas, SpriteSheetPreviewBox.AtlasImage, isSmoothMoves);
-            rect.SetHandlesVisible(false);
             
             SpriteSheetPreviewBox.SelectionCanvas.Children.Add(rect);
             SpriteSheetPreviewBox.SpriteDatabase.Sprites.Add(rect);
@@ -1059,6 +1090,12 @@ public partial class SpriteSheetEditorWindow : Window
 
         OriginXInput.IsEnabled = isSmoothMoves;
         OriginYInput.IsEnabled = isSmoothMoves;
+
+        if (isSmoothMoves)
+        {
+            // enable create buttons
+            CreateNewHeadgearButton.IsEnabled = true;
+        }
     }
 
     private void LoadImage()

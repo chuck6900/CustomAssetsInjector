@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Numerics;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -16,9 +17,47 @@ public class Sprite : TransformControlRectangle
         get => m_SpriteName;
         set
         {
-            m_ToolTip.Content = value;
             m_SpriteName = value;
+            m_ToolTip.Content = value;
+            SpriteData.Name = value;
         }
+    }
+
+    public new double Width
+    {
+        get => base.Width;
+        set
+        {
+            SpriteData.Width = value;
+            base.Width = value;
+        }
+    }
+    
+    public new Vector2 OriginPoint
+    {
+        get => base.OriginPoint;
+        set
+        {
+            SpriteData.OriginPoint = value;
+            base.OriginPoint = value;
+        }
+    }
+
+    private SpriteData m_SpriteData;
+
+    public SpriteData SpriteData
+    {
+        get
+        {
+            m_SpriteData.StartX = Canvas.GetLeft(this);
+            m_SpriteData.EndX = Canvas.GetRight(this);
+            
+            m_SpriteData.StartY = Canvas.GetTop(this);
+            m_SpriteData.EndY = Canvas.GetBottom(this);
+
+            return m_SpriteData;
+        }
+        set => m_SpriteData = value;
     }
 
     public EventHandler? RightClicked;
@@ -29,9 +68,18 @@ public class Sprite : TransformControlRectangle
     
     private ToolTip m_ToolTip = new();
 
-    public Sprite(string spriteName)
+    public Sprite(SpriteData data)
     {
-        SpriteName = spriteName;
+        Canvas.SetLeft(this, data.StartX);
+        Canvas.SetTop(this, data.StartY);
+        Canvas.SetRight(this, data.EndX);
+        Canvas.SetBottom(this, data.EndY);
+        
+        SpriteData = data;
+        
+        SpriteName = SpriteData.Name;
+        Width = SpriteData.Width;
+        Height = SpriteData.Height;
         
         Fill = new SolidColorBrush(Colors.White, 0.12);
         Stroke = new SolidColorBrush(Colors.White, 0.5);
@@ -45,24 +93,7 @@ public class Sprite : TransformControlRectangle
         PointerExited += Sprite_PointerExited;
     }
 
-    public new SpriteData AsSpriteData()
-    {
-        return new SpriteData
-        {
-            Name = SpriteName,
-
-            StartX = Canvas.GetLeft(this),
-            EndX = Canvas.GetRight(this),
-
-            StartY = Canvas.GetTop(this),
-            EndY = Canvas.GetBottom(this),
-
-            Width = this.Width,
-            Height = this.Height,
-
-            OriginPoint = OriginPoint
-        };
-    }
+    public override SpriteData AsSpriteData() => SpriteData;
 
     private async void Sprite_PointerEntered(object? sender, PointerEventArgs e)
     {

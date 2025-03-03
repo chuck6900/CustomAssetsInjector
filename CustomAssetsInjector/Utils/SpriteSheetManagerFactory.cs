@@ -190,10 +190,14 @@ public static class SpriteSheetManagerFactory
 
     private static void LoadTempGenerator(AssetsManager am)
     {
+        Logger.Log("Loading CPP2IL..");
+        
         var globalMetadataPath = Path.Combine(AppBundleManager.Il2CppExtractFolderPath, "global-metadata.dat");
         var binaryPath = Path.Combine(AppBundleManager.Il2CppExtractFolderPath, "il2cpp.binary");
             
         am.MonoTempGenerator = new Cpp2IlTempGenerator(globalMetadataPath, binaryPath);
+        
+        Logger.Log("Loading CPP2IL.. Done!");
     }
     
     private static void ResetTempGenerator(AssetsManager am)

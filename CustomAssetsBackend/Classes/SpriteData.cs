@@ -17,14 +17,14 @@ public class SpriteData : IEquatable<SpriteData>
             return false;
         if (ReferenceEquals(this, other)) 
             return true;
-        
-        return Name == other.Name && 
-               StartX.Equals(other.StartX) && 
-               StartY.Equals(other.StartY) && 
-               EndX.Equals(other.EndX) && 
-               EndY.Equals(other.EndY) && 
-               Width.Equals(other.Width) && 
-               Height.Equals(other.Height) && 
+
+        return Name == other.Name &&
+               StartX.Equals(other.StartX) &&
+               StartY.Equals(other.StartY) &&
+               EndX.Equals(other.EndX) &&
+               EndY.Equals(other.EndY) &&
+               Width.Equals(other.Width) &&
+               Height.Equals(other.Height) &&
                OriginPoint.Equals(other.OriginPoint);
     }
 
@@ -44,4 +44,6 @@ public class SpriteData : IEquatable<SpriteData>
     {
         return HashCode.Combine(Name, StartX, StartY, EndX, EndY, Width, Height, OriginPoint);
     }
+
+    public override string ToString() => Name;
 }

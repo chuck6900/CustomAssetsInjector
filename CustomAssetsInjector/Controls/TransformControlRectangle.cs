@@ -30,7 +30,7 @@ public class TransformControlRectangle : Rectangle
     // origin point is stored with values 0-1, where 0 is far left / top and 1 is far right / bottom
     public Vector2 OriginPoint = new(0.5f, 0.5f);
 
-    public SpriteData AsSpriteData()
+    public virtual SpriteData AsSpriteData()
     {
         return new SpriteData
         {

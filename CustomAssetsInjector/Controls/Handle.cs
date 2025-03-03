@@ -39,7 +39,7 @@ public class Handle : Rectangle
     {
         var isOriginHandle = type == HandleType.Origin;
         
-        this.Name = $"[{parentRectangle.Name ?? (parentRectangle as Sprite)?.SpriteName}]-[Handle:{type.ToString()}]";
+        this.Name = $"[{(parentRectangle as Sprite)?.SpriteName ?? parentRectangle.Name ?? string.Empty}]-[Handle:{type.ToString()}]";
         this.ZIndex = isOriginHandle ? 2 : 1; // prefer origin point
         
         ParentRectangle = parentRectangle;

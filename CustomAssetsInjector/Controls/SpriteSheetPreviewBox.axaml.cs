@@ -5,6 +5,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Media;
+using CustomAssetsBackend.Classes;
 using CustomAssetsBackend.Misc;
 using CustomAssetsInjector.Actions;
 using CustomAssetsInjector.Services;
@@ -265,7 +266,7 @@ public partial class SpriteSheetPreviewBox : UserControl
 
     private void UpdateDrawnSprite(Point currentPoint)
     {
-        if (m_CurrentSprite == null || m_StartPoint == default(Point))
+        if (m_CurrentSprite == null || m_StartPoint == default)
             return;
         
         var widthIsNegative = currentPoint.X - m_StartPoint.X < 0;
@@ -316,8 +317,12 @@ public partial class SpriteSheetPreviewBox : UserControl
     private void CreateNewSprite()
     {
         SelectedSprite?.SetHandlesVisible(false);
-        
-        m_CurrentSprite = new Sprite("Sprite" + (SpriteDatabase.Sprites.Count + 1));
+
+        var newName = "Sprite" + (SpriteDatabase.Sprites.Count + 1);
+        m_CurrentSprite = new Sprite(new SpriteData
+        {
+            Name = newName
+        });
             
         m_CurrentSprite.InitHandles(SelectionCanvas, AtlasImage, SpriteDatabase.IsSmoothMoves);
         m_CurrentSprite.SetHandlesVisible(false);

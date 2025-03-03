@@ -16,7 +16,7 @@ public static class RectPacker
         public Image<Rgba32> ImageData;
     }
     
-    public static List<PackingSpriteData> PackRects(List<PackingSpriteData> packingSpriteInfo, string outputImagePath, uint spaceBetweenSprites = 0)
+    public static List<PackingSpriteData> PackImages(List<PackingSpriteData> packingSpriteInfo, string outputImagePath, uint spaceBetweenSprites = 0)
     {
         var packRects = new PackingRectangle[packingSpriteInfo.Count];
         

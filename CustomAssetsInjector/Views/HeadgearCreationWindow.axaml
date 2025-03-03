@@ -1,0 +1,88 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:gb="clr-namespace:GroupBox.Avalonia.Controls;assembly=GroupBox.Avalonia"
+             xmlns:controls="clr-namespace:CustomAssetsInjector.Controls"
+             mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="700"
+             x:Class="CustomAssetsInjector.Views.HeadgearCreationWindow"
+             Title="Create a headgear"
+             Width="900"
+             Height="800">
+    
+    <StackPanel Name="CreateHeadgearInfoPanel">
+        <Grid ColumnDefinitions="Auto *">
+            <TextBlock Padding="5 0" Grid.Column="0" VerticalAlignment="Center">Headgear name:</TextBlock>
+            <TextBox Name="HeadgearNameInput" Watermark="Input the AssetId of your new headgear here." CornerRadius="3" Margin="0 5 3 0" Padding="10" Grid.Column="1" VerticalContentAlignment="Center"/>
+        </Grid>
+        <Grid ColumnDefinitions="* *">
+            <gb:GroupBox Grid.Column="0" Header="Front sprite" Theme="{StaticResource GroupBoxClassic}" Margin="5">
+                <StackPanel>
+                    <Grid ColumnDefinitions="* *" RowDefinitions="* Auto *">
+                        <Grid Grid.Column="0" Grid.Row="0" Margin="0  5 0 0" ColumnDefinitions="Auto *">
+                            <TextBlock Padding="10" Grid.Column="0" VerticalAlignment="Center">X:</TextBlock>
+                            <NumericUpDown Name="XPositionFrontSprite" Minimum="-999" Maximum="999" Value="0" Height="35" CornerRadius="3" Grid.Column="1" VerticalContentAlignment="Center"></NumericUpDown>
+                        </Grid>
+                        <Grid Grid.Column="1" Grid.Row="0" Margin="1 5 0 5" ColumnDefinitions="Auto *">
+                            <TextBlock Padding="10" Grid.Column="0" VerticalAlignment="Center">Y:</TextBlock>
+                            <NumericUpDown Name="YPositionFrontSprite" Minimum="-999" Maximum="999" Value="0" Height="35" CornerRadius="3" Grid.Column="1" VerticalContentAlignment="Center"></NumericUpDown>
+                        </Grid>
+                        
+                        <Label Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Name="ScaleInfoTextFront" Margin="5 10 5 0">Scale settings (only affects size in the class preview, not on the bird):</Label>
+                        
+                        <Grid Grid.Column="0" Grid.Row="2" Margin="0  5 0 0" ColumnDefinitions="Auto *">
+                            <TextBlock Padding="10" Grid.Column="0" VerticalAlignment="Center">X Scale:</TextBlock>
+                            <NumericUpDown Name="XScaleFrontSprite" Minimum="0.1" Maximum="2" Value="1" Increment="0.1" Height="35" CornerRadius="3" Grid.Column="1" VerticalContentAlignment="Center"></NumericUpDown>
+                        </Grid>
+                        <Grid Grid.Column="1" Grid.Row="2" Margin="1 5 0 5" ColumnDefinitions="Auto *">
+                            <TextBlock Padding="10" Grid.Column="0" VerticalAlignment="Center">Y Scale:</TextBlock>
+                            <NumericUpDown Name="YScaleFrontSprite" Minimum="0.1" Maximum="2" Value="1" Increment="0.1" Height="35" CornerRadius="3" Grid.Column="1" VerticalContentAlignment="Center"></NumericUpDown>
+                        </Grid>
+                    </Grid>
+                    
+                    <controls:SpritePreviewer Name="FrontSpritePreview"/>
+                </StackPanel>
+            </gb:GroupBox>
+            
+            <gb:GroupBox Grid.Column="1" Header="Back sprite" Theme="{StaticResource GroupBoxClassic}" Margin="5">
+                <StackPanel>
+                    <Grid ColumnDefinitions="* *" RowDefinitions="* Auto *">
+                        <Grid Grid.Column="0" Grid.Row="0" Margin="0  5 0 0" ColumnDefinitions="Auto *">
+                            <TextBlock Padding="10" Grid.Column="0" VerticalAlignment="Center">X:</TextBlock>
+                            <NumericUpDown Name="XPositionBackSprite" Minimum="-999" Maximum="999" Value="0" Height="35" CornerRadius="3" Grid.Column="1" VerticalContentAlignment="Center"></NumericUpDown>
+                        </Grid>
+                        <Grid Grid.Column="1" Grid.Row="0" Margin="1 5 0 5" ColumnDefinitions="Auto *">
+                            <TextBlock Padding="10" Grid.Column="0" VerticalAlignment="Center">Y:</TextBlock>
+                            <NumericUpDown Name="YPositionBackSprite" Minimum="-999" Maximum="999" Value="0" Height="35" CornerRadius="3" Grid.Column="1" VerticalContentAlignment="Center"></NumericUpDown>
+                        </Grid>
+                        
+                        <Label Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Name="ScaleInfoTextBack" Margin="5 10 5 0">Scale settings (only affects size in the class preview, not on the bird):</Label>
+                        
+                        <Grid Grid.Column="0" Grid.Row="2" Margin="0  5 0 0" ColumnDefinitions="Auto *">
+                            <TextBlock Padding="10" Grid.Column="0" VerticalAlignment="Center">X Scale:</TextBlock>
+                            <NumericUpDown Name="XScaleBackSprite" Minimum="0.1" Maximum="2" Value="1" Increment="0.1" Height="35" CornerRadius="3" Grid.Column="1" VerticalContentAlignment="Center"></NumericUpDown>
+                        </Grid>
+                        <Grid Grid.Column="1" Grid.Row="2" Margin="1 5 0 5" ColumnDefinitions="Auto *">
+                            <TextBlock Padding="10" Grid.Column="0" VerticalAlignment="Center">Y Scale:</TextBlock>
+                            <NumericUpDown Name="YScaleBackSprite" Minimum="0.1" Maximum="2" Value="1" Increment="0.1" Height="35" CornerRadius="3" Grid.Column="1" VerticalContentAlignment="Center"></NumericUpDown>
+                        </Grid>
+                    </Grid>
+                    
+                    <controls:SpritePreviewer Name="BackSpritePreview"/>
+                </StackPanel>
+            </gb:GroupBox>
+        </Grid>
+        
+        <Grid ColumnDefinitions="* *">
+            <gb:GroupBox Grid.Column="0" Header="Final headgear preview" Theme="{StaticResource GroupBoxClassic}" Margin="5">
+                <controls:SpritePreviewer Name="FinalSpritePreview" />
+            </gb:GroupBox>
+            
+            <gb:GroupBox Grid.Column="1" Header="Final headgear preview with class selection button" Theme="{StaticResource GroupBoxClassic}" Margin="5">
+                <controls:SpritePreviewer Name="FinalSpritePreviewWithButton" />
+            </gb:GroupBox>
+        </Grid>
+        
+        <Button Name="CreateHeadgearButton" Margin="5" CornerRadius="5" IsEnabled="False" IsVisible="False" Height="50">Create headgear</Button>
+    </StackPanel>
+</Window>

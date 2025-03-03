@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Avalonia.Media;
 using Avalonia.Threading;
 using CustomAssetsBackend.Misc;
 using CustomAssetsInjector.Services;
@@ -174,7 +175,7 @@ public partial class MainWindow : Window
         // wipe old data
         try
         {
-            ProgressService.UpdateProgress(ProgressService.ApkResetProgressId, 0, true, null, null, "Deleting obb..");
+            ProgressService.UpdateProgress(ProgressService.ApkResetProgressId, 0, true, null, null, "Deleting obb..", Colors.SeaGreen);
 
             Directory.CreateDirectory(AppBundleManager.ObbExtractFolderPath);
             await Task.Run(() => Directory.Delete(AppBundleManager.ObbExtractFolderPath, true));
@@ -189,6 +190,7 @@ public partial class MainWindow : Window
         catch (Exception err)
         {
             Logger.Log("Failed to reset data!", Logger.LogLevel.Exception, err);
+            ProgressService.UpdateProgress(ProgressService.ApkResetProgressId, 1, false, 0, 1, "Reset failed!", Colors.Firebrick);
         }
     }
 
@@ -227,8 +229,6 @@ public partial class MainWindow : Window
             EditorPanel.SetActive(true);
 
             HintText.Text = SelectEditorHintText;
-            
-            SpriteSheetEditorButton_OnClick(sender, e);
 
             return;
         }

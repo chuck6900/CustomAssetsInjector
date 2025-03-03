@@ -57,7 +57,18 @@ public class NGUISpriteSheetManager(string il2CppFolderPath) : SpriteSheetManage
                 var startY = sprite["y"].AsInt;
                 var width = sprite["width"].AsInt;
                 var height = sprite["height"].AsInt;
-                Sprites.Add(new SpriteData
+                
+                var borderLeft = sprite["borderLeft"].AsInt;
+                var borderRight = sprite["borderRight"].AsInt;
+                var borderTop = sprite["borderTop"].AsInt;
+                var borderBottom = sprite["borderBottom"].AsInt;
+                
+                var paddingLeft = sprite["paddingLeft"].AsInt;
+                var paddingRight = sprite["paddingRight"].AsInt;
+                var paddingTop = sprite["paddingTop"].AsInt ;
+                var paddingBottom = sprite["paddingBottom"].AsInt;
+                
+                Sprites.Add(new NGUISpriteData
                 {
                     Name = sprite["name"].AsString,
                     StartX = startX,
@@ -65,7 +76,17 @@ public class NGUISpriteSheetManager(string il2CppFolderPath) : SpriteSheetManage
                     StartY = startY,
                     EndY = startY + height,
                     Width = width,
-                    Height = height
+                    Height = height,
+                    
+                    BorderLeft = borderLeft,
+                    BorderRight = borderRight,
+                    BorderTop = borderTop,
+                    BorderBottom = borderBottom,
+                    
+                    PaddingLeft = paddingLeft,
+                    PaddingRight = paddingRight,
+                    PaddingTop = paddingTop,
+                    PaddingBottom = paddingBottom
                 });
             }
             
@@ -85,6 +106,12 @@ public class NGUISpriteSheetManager(string il2CppFolderPath) : SpriteSheetManage
 
     public override CommonUtils.ReturnCode Save()
     {
+        if (Sprites.Count == 0 || !Sprites.All(s => s is NGUISpriteData))
+        {
+            Logger.Log($"No sprites loaded or a sprite is not of type {nameof(NGUISpriteData)}!");
+            return CommonUtils.ReturnCode.NoAtlasLoaded;
+        }
+        
         var uiAtlasAssets = AssetCache.Where(asset => asset.ObjectType == UnityAsset.UnityObjectType.UIAtlas).ToList();
         var texture2dAsset = GetCachedAssetOfType(UnityAsset.UnityObjectType.Texture2D);
         var materialAsset = GetCachedAssetOfType(UnityAsset.UnityObjectType.Material);
@@ -107,11 +134,13 @@ public class NGUISpriteSheetManager(string il2CppFolderPath) : SpriteSheetManage
         
         var success = TexturePlugin.TextureMain.ReplaceTexture(textureBaseField, imagePath, out var err);
 
-        if (!success)
+        if (!success || err != null)
         {
             Logger.Log("Failed to replace the atlas image!", Logger.LogLevel.Exception, err);
             return CommonUtils.ReturnCode.TextureReplaceFailed;
         }
+        
+        SaveAssetsFile(am, textureFileInst, textureAssetInfo, textureBaseField, texture2dAsset.Path);
         
         Logger.Log("Replacing atlas image.. Done!");
 
@@ -136,7 +165,7 @@ public class NGUISpriteSheetManager(string il2CppFolderPath) : SpriteSheetManage
 
             mSprites.Children.Clear();
             
-            foreach (var sprite in this.Sprites)
+            foreach (NGUISpriteData sprite in this.Sprites)
             {
                 var spriteTemplate = ValueBuilder.DefaultValueFieldFromArrayTemplate(mSprites);
                 
@@ -146,21 +175,20 @@ public class NGUISpriteSheetManager(string il2CppFolderPath) : SpriteSheetManage
                 spriteTemplate["width"].AsInt = (int)Math.Round(sprite.Width);
                 spriteTemplate["height"].AsInt = (int)Math.Round(sprite.Height);
 
+                spriteTemplate["borderLeft"].AsInt = sprite.BorderLeft;
+                spriteTemplate["borderRight"].AsInt = sprite.BorderRight;
+                spriteTemplate["borderTop"].AsInt = sprite.BorderTop;
+                spriteTemplate["borderBottom"].AsInt = sprite.BorderBottom;
+                
+                spriteTemplate["paddingLeft"].AsInt = sprite.PaddingLeft;
+                spriteTemplate["paddingRight"].AsInt = sprite.PaddingRight;
+                spriteTemplate["paddingTop"].AsInt = sprite.PaddingTop;
+                spriteTemplate["paddingBottom"].AsInt = sprite.PaddingBottom;
+
                 mSprites.Children.Add(spriteTemplate);
             }
 
-            uiAtlasInfo.SetNewData(atlasBase);
-
-            var tempAssetFilePath = Path.GetTempFileName();
-
-            using (var writer = new AssetsFileWriter(tempAssetFilePath))
-            {
-                uiAtlasFile.Write(writer);
-            }
-
-            am.UnloadAssetsFile(uiAtlasFileInst);
-
-            File.Replace(tempAssetFilePath, uiAtlasAsset.Path, null);
+            SaveAssetsFile(am, uiAtlasFileInst, uiAtlasInfo, atlasBase, uiAtlasAsset.Path);
         }
 
         Logger.Log("Reconstructing sprite data.. Done!");

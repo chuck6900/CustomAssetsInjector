@@ -17,27 +17,18 @@ public class EditSpriteAction : IAction
     
     public void SetPreviousSpriteData()
     {
-        if (m_Sprite is Sprite sprite)
-            m_PreviousSpriteData = sprite.AsSpriteData();
-        else
-            m_PreviousSpriteData = m_Sprite.AsSpriteData();
+        m_PreviousSpriteData = m_Sprite.AsSpriteData();
     }
 
     public void SetCurrentSpriteData()
     {
-        if (m_Sprite is Sprite sprite)
-            m_CurrentSpriteData = sprite.AsSpriteData();
-        else
-            m_CurrentSpriteData = m_Sprite.AsSpriteData();
+        m_CurrentSpriteData = m_Sprite.AsSpriteData();
     }
     
     public void Execute()
     {
         if (m_CurrentSpriteData == null)
             return;
-        
-        if (m_Sprite is Sprite sprite)
-            sprite.SpriteName = m_CurrentSpriteData.Name;
         
         Canvas.SetLeft(m_Sprite, m_CurrentSpriteData.StartX);
         m_Sprite.XChanged?.Invoke(m_Sprite, m_CurrentSpriteData.StartX);
@@ -66,27 +57,24 @@ public class EditSpriteAction : IAction
         if (m_PreviousSpriteData == null)
             return;
         
-        if (m_Sprite is Sprite sprite)
-            sprite.SpriteName = m_PreviousSpriteData.Name;
+        Canvas.SetLeft(m_Sprite, m_PreviousSpriteData.StartX);
+        m_Sprite.XChanged?.Invoke(m_Sprite, m_PreviousSpriteData.StartX);
         
-        Canvas.SetLeft(m_Sprite, m_CurrentSpriteData.StartX);
-        m_Sprite.XChanged?.Invoke(m_Sprite, m_CurrentSpriteData.StartX);
+        Canvas.SetTop(m_Sprite, m_PreviousSpriteData.StartY);
+        m_Sprite.YChanged?.Invoke(m_Sprite, m_PreviousSpriteData.StartY);
         
-        Canvas.SetTop(m_Sprite, m_CurrentSpriteData.StartY);
-        m_Sprite.YChanged?.Invoke(m_Sprite, m_CurrentSpriteData.StartY);
+        Canvas.SetRight(m_Sprite, m_PreviousSpriteData.EndX);
+        Canvas.SetBottom(m_Sprite, m_PreviousSpriteData.EndY);
         
-        Canvas.SetRight(m_Sprite, m_CurrentSpriteData.EndX);
-        Canvas.SetBottom(m_Sprite, m_CurrentSpriteData.EndY);
+        m_Sprite.Width = m_PreviousSpriteData.Width;
+        m_Sprite.WidthChanged?.Invoke(m_Sprite, m_PreviousSpriteData.Width);
         
-        m_Sprite.Width = m_CurrentSpriteData.Width;
-        m_Sprite.WidthChanged?.Invoke(m_Sprite, m_CurrentSpriteData.Width);
+        m_Sprite.Height = m_PreviousSpriteData.Height;
+        m_Sprite.HeightChanged?.Invoke(m_Sprite, m_PreviousSpriteData.Height);
         
-        m_Sprite.Height = m_CurrentSpriteData.Height;
-        m_Sprite.HeightChanged?.Invoke(m_Sprite, m_CurrentSpriteData.Height);
-        
-        m_Sprite.OriginPoint = m_CurrentSpriteData.OriginPoint;
-        m_Sprite.OriginXChanged?.Invoke(m_Sprite, m_CurrentSpriteData.OriginPoint.X);
-        m_Sprite.OriginYChanged?.Invoke(m_Sprite, m_CurrentSpriteData.OriginPoint.Y);
+        m_Sprite.OriginPoint = m_PreviousSpriteData.OriginPoint;
+        m_Sprite.OriginXChanged?.Invoke(m_Sprite, m_PreviousSpriteData.OriginPoint.X);
+        m_Sprite.OriginYChanged?.Invoke(m_Sprite, m_PreviousSpriteData.OriginPoint.Y);
         
         m_Sprite.RepositionHandles();
     }

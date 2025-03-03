@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -24,8 +25,8 @@ public static class UtilExtensions
     
     public static IClipboard? GetClipboard() 
     {
-        if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime { MainWindow: { } window }) {
-            return window.Clipboard;
+        if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime { Windows: { Count: > 0 } windows }) {
+            return windows[0].Clipboard;
         }
 
         return null;
@@ -37,5 +38,17 @@ public static class UtilExtensions
             return false;
         
         return list1.ToHashSet().SetEquals(list2);
+    }
+
+    // because I invert the coordinates in the headgear window, 0 becomes -0 and it annoys me
+    public static Vector2 FixNegativeZero(this Vector2 vector2)
+    {
+        if (vector2.X == float.NegativeZero)
+            vector2.X = 0;
+        
+        if (vector2.Y == float.NegativeZero)
+            vector2.Y = 0;
+        
+        return vector2;
     }
 }
