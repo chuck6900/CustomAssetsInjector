@@ -49,7 +49,7 @@ public partial class HeadgearCreationWindow : Window
             return;
         }
 
-        var headgear = new SmoothMovesSpriteSheetManager.Headgear
+        var headgear = new Headgear
         {
             Name = HeadgearNameInput.Text
         };
@@ -57,14 +57,14 @@ public partial class HeadgearCreationWindow : Window
         var (frontSpritePos, backSpritePos) = GetSpritePositions();
         var (frontSpriteScale, backSpriteScale) = GetSpriteScales();
         
-        var frontSprite = new SmoothMovesSpriteSheetManager.HeadgearSprite
+        var frontSprite = new HeadgearSprite
         {
             Data = (FrontSpritePreview.SpriteSelectionComboBox.SelectionBoxItem as SpriteData)!,
             Position = frontSpritePos.FixNegativeZero(),
             Scale = frontSpriteScale.FixNegativeZero()
         };
 
-        var backSprite = new SmoothMovesSpriteSheetManager.HeadgearSprite
+        var backSprite = new HeadgearSprite
         {
             Data = (BackSpritePreview.SpriteSelectionComboBox.SelectionBoxItem as SpriteData)!,
             Position = backSpritePos.FixNegativeZero(),
@@ -161,7 +161,7 @@ public partial class HeadgearCreationWindow : Window
 
         var (frontSpriteScale, backSpriteScale) = GetSpriteScales();
 
-        var headgearPreviewImage = CombineImages(frontPreviewImage, frontVector2, frontSpriteScale,backPreviewImage, backVector2, backSpriteScale);
+        var headgearPreviewImage = CombineImages(frontPreviewImage, frontVector2, frontSpriteScale, backPreviewImage, backVector2, backSpriteScale);
         var previewImageWithButton = CombineImages(headgearPreviewImage, new Vector2(0, 0), new Vector2(1, 1), buttonImage, new Vector2(0, 0), new Vector2(1, 1));
         return previewImageWithButton;
     }

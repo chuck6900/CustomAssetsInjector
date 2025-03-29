@@ -9,14 +9,19 @@
              Width="700"
              Height="400"
              WindowStartupLocation="CenterOwner">
-    
-    <Grid Name="MainGrid" ColumnDefinitions="6*" RowDefinitions="* Auto">
-        <ExperimentalAcrylicBorder Grid.Row="0" Grid.RowSpan="2" Grid.ColumnSpan="7" IsHitTestVisible="False" Material="{StaticResource LightAcrylicMaterial}"/>
-        
-        <ScrollViewer Name="MessageTextScroller" Grid.Row="0" Margin="10" VerticalScrollBarVisibility="Auto">
-            <TextBlock Name="MessageText" FontSize="14" TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center" TextWrapping="Wrap"></TextBlock>
-        </ScrollViewer>
-        
-        <Button Grid.Row="1" Name="InitialButton" Margin="10" CornerRadius="5" Height="50" Click="Button_Click"/>
-    </Grid>
+    <Panel>
+        <ExperimentalAcrylicBorder IsHitTestVisible="False" Material="{StaticResource AcrylicMaterial}"/>
+        <StackPanel>
+            <Grid Name="MainGrid" ColumnDefinitions="6*" RowDefinitions="* Auto" Height="400">
+                
+                <ScrollViewer Name="MessageTextScroller" Grid.Row="0" Margin="40 20 40 10" VerticalScrollBarVisibility="Auto">
+                    <TextBlock Name="MessageText" FontSize="14" TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center" TextWrapping="Wrap"></TextBlock>
+                </ScrollViewer>
+                
+                <Button Grid.Row="1" Name="InitialButton" Margin="10" CornerRadius="5" Height="50" Click="Button_Click"/>
+            </Grid>
+            
+            <CheckBox Name="OptOutCheckBox" IsEnabled="False" IsVisible="False" Margin="5" CornerRadius="5" HorizontalAlignment="Left" VerticalAlignment="Bottom">Do not show this popup again</CheckBox>
+        </StackPanel>
+    </Panel>
 </Window>

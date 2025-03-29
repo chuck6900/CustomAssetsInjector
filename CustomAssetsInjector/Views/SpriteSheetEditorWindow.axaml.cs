@@ -30,6 +30,8 @@ namespace CustomAssetsInjector.Views;
 
 public partial class SpriteSheetEditorWindow : Window
 {
+    private bool VerifyAtlasSizeOnImport;
+    
     private int IndexOfSpriteSettingsTab => SpriteSettingsTabControl.IndexFromContainer(SettingsTab);
     private int IndexOfLogsTab => SpriteSettingsTabControl.IndexFromContainer(LogsTab);
 
@@ -68,23 +70,6 @@ public partial class SpriteSheetEditorWindow : Window
     }
 
     private SpriteSheetManager? m_SpriteSheetManager;
-    
-    private void OpenHeadgearCreationInfo(object? sender, RoutedEventArgs e)
-    {
-        var window = new HeadgearCreationWindow();
-        window.ShowDialog(this);
-        
-        if (m_SpriteSheetManager is SmoothMovesSpriteSheetManager && !string.IsNullOrEmpty(m_AtlasImagePath))
-            window.SetupSpritePreviews(m_SpriteSheetManager.Sprites, m_AtlasImagePath);
-    }
-    
-    public void CreateHeadgear(SmoothMovesSpriteSheetManager.Headgear headgear)
-    {
-        if (m_SpriteSheetManager is not SmoothMovesSpriteSheetManager smManager)
-            return;
-        
-        smManager.CreateHeadgear(headgear, AppBundleManager.ObbExtractFolderPath);
-    }
 
     public SpriteSheetEditorWindow()
     {
@@ -156,9 +141,15 @@ public partial class SpriteSheetEditorWindow : Window
         
         // confirmation popup on close
         this.Closing += OnClosing;
+        this.Closed += OnClosed;
     }
 
     #region Window events
+    
+    private void OnClosed(object? sender, EventArgs eventArgs)
+    {
+        UtilExtensions.GetMainWindow()?.Show();
+    }
 
     private void OnKeyDown(object? sender, KeyEventArgs e)
     {
@@ -228,11 +219,12 @@ public partial class SpriteSheetEditorWindow : Window
         // changes have been made
         var result = await MessageBox.ShowMessageBox(
             this,
+            "ConfirmUnsavedChanges",
             "You have unsaved changes! Are you sure you want to quit?",
             "Confirm",
             ["Yes", "Cancel"]);
 
-        if (result == "Yes")
+        if (result == "Yes" || result == MessageBox.OPT_OUT_STRING)
         {
             e.Cancel = false;
             this.Closing -= OnClosing;
@@ -301,7 +293,7 @@ public partial class SpriteSheetEditorWindow : Window
     
     private async void DeleteRectDeleteImage(object? sender, RoutedEventArgs e)
     {
-        if (SelectedSprite == null)
+        if (SelectedSprite == null || SpriteSheetPreviewBox.SpriteDatabase.IsSmoothMoves)
             return;
 
         var result = await MessageBox.ShowMessageBox(
@@ -313,7 +305,7 @@ public partial class SpriteSheetEditorWindow : Window
             "Confirm", 
             ["Yes", "Cancel"]);
 
-        if (result == "Cancel")
+        if (result == "Cancel" || result == MessageBox.EXIT_STRING)
             return;
         
         // visually indicate that its loading
@@ -359,10 +351,10 @@ public partial class SpriteSheetEditorWindow : Window
             var spriteHeight = 0;
             Dispatcher.UIThread.Invoke(() =>
             {
-                xPos = (int)Canvas.GetLeft(sprite);
-                yPos = (int)Canvas.GetTop(sprite);
-                spriteWidth = (int)sprite.Width;
-                spriteHeight = (int)sprite.Height;
+                xPos = (int)Canvas.GetLeft(sprite) - 1;
+                yPos = (int)Canvas.GetTop(sprite) - 1;
+                spriteWidth = (int)sprite.Width + 2;
+                spriteHeight = (int)sprite.Height + 2;
             });
 
             var cropRect = new Rectangle(xPos, yPos, spriteWidth, spriteHeight);
@@ -374,6 +366,12 @@ public partial class SpriteSheetEditorWindow : Window
             Dispatcher.UIThread.Invoke(() =>
             {
                 data = sprite.AsSpriteData();
+                data.StartX -= 1;
+                data.EndX += 1;
+                data.StartY -= 1;
+                data.EndY += 1;
+                data.Width += 2;
+                data.Height += 2;
             });
             
             var spriteInfo = new RectPacker.PackingSpriteData
@@ -384,7 +382,18 @@ public partial class SpriteSheetEditorWindow : Window
             spriteInfoList.Add(spriteInfo);
         }
 
-        return RectPacker.PackImages(spriteInfoList, m_AtlasImagePath, 2);
+        var packedRects = RectPacker.PackImages(spriteInfoList, m_AtlasImagePath, 2);
+        foreach (var rect in packedRects)
+        {
+            rect.SpriteData.StartX += 1;
+            rect.SpriteData.EndX -= 1;
+            rect.SpriteData.StartY += 1;
+            rect.SpriteData.EndY -= 1;
+            rect.SpriteData.Width -= 2;
+            rect.SpriteData.Height -= 2;
+        }
+
+        return packedRects;
     }
     
     #endregion
@@ -633,12 +642,23 @@ public partial class SpriteSheetEditorWindow : Window
             var file = await FileDialogUtils.PromptOpenFile(
                 "Select atlas png", 
                 this.StorageProvider, 
-                [FileDialogUtils.PngFile]);
+                [FileDialogUtils.PNGFile]);
 
             if (file == null)
             {
                 Logger.Log("No file selected.");
                 return;
+            }
+
+            if (VerifyAtlasSizeOnImport)
+            {
+                var currentAtlasResolution = CommonUtils.GetImageResolution(m_AtlasImagePath);
+                var importedAtlasResolution = CommonUtils.GetImageResolution(file.Path.LocalPath);
+                if (currentAtlasResolution != importedAtlasResolution)
+                {
+                    Logger.Log($"Import failed! Atlas size must be {currentAtlasResolution.Item1}x{currentAtlasResolution.Item2}");
+                    return;
+                }
             }
 
             // overwrite old image
@@ -658,7 +678,7 @@ public partial class SpriteSheetEditorWindow : Window
             var files = await FileDialogUtils.PromptOpenFiles(
                 "Select the sprites to add", 
                 this.StorageProvider, 
-                [FileDialogUtils.PngFile]);
+                [FileDialogUtils.PNGFile]);
         
             if (files == null || files.Count == 0)
             {
@@ -810,7 +830,7 @@ public partial class SpriteSheetEditorWindow : Window
             var file = await FileDialogUtils.PromptOpenFile(
                 "Import spritesheet data from JSON file", 
                 this.StorageProvider, 
-                [FileDialogUtils.JsonFile]);
+                [FileDialogUtils.JSONFile]);
 
             if (file == null)
             {
@@ -858,7 +878,7 @@ public partial class SpriteSheetEditorWindow : Window
                 this.StorageProvider,
                 "dump.json",
                 "json",
-                [FileDialogUtils.JsonFile]);
+                [FileDialogUtils.JSONFile]);
 
             if (file == null)
                 return;
@@ -1094,7 +1114,15 @@ public partial class SpriteSheetEditorWindow : Window
         if (isSmoothMoves)
         {
             // enable create buttons
+            CreateTab.IsEnabled = true;
             CreateNewHeadgearButton.IsEnabled = true;
+            
+            // disable the sprite repacking buttons since SmoothMoves atlases cant be rearranged
+            ImportSpritesButton.IsEnabled = false;
+            DeleteRectDeleteImageButton.IsEnabled = false;
+
+            // enable atlas size verification (make sure the imported atlas image is the same resolution as the current one)
+            VerifyAtlasSizeOnImport = true;
         }
     }
 
@@ -1123,16 +1151,30 @@ public partial class SpriteSheetEditorWindow : Window
         SetMaxSizeControlValues();
     }
     
-    private void TrySetLoadButtonEnabled(bool enable)
-        => LoadAndSaveAtlasButton.IsEnabled = enable && !string.IsNullOrEmpty(AtlasNameInput.Text);
-    
     private void OnAtlasNameInputUpdated(object? sender, TextChangedEventArgs e) 
-        => TrySetLoadButtonEnabled(!string.IsNullOrEmpty(AtlasNameInput.Text));
+        => LoadAndSaveAtlasButton.IsEnabled = !string.IsNullOrEmpty(AtlasNameInput.Text);
     
     private void OnAtlasNameInputKeyDown(object? sender, KeyEventArgs e)
     {
         if (e.Key == Key.Enter)
             LoadAtlas(sender, e);
+    }
+    
+    private void OpenHeadgearCreationInfo(object? sender, RoutedEventArgs e)
+    {
+        var window = new HeadgearCreationWindow();
+        window.ShowDialog(this);
+        
+        if (m_SpriteSheetManager is SmoothMovesSpriteSheetManager && !string.IsNullOrEmpty(m_AtlasImagePath))
+            window.SetupSpritePreviews(m_SpriteSheetManager.Sprites, m_AtlasImagePath);
+    }
+    
+    public void CreateHeadgear(Headgear headgear)
+    {
+        if (m_SpriteSheetManager is not SmoothMovesSpriteSheetManager smManager)
+            return;
+        
+        smManager.CreateHeadgear(headgear, AppBundleManager.ObbExtractFolderPath);
     }
     
     #endregion

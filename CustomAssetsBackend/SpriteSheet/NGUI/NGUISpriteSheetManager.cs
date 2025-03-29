@@ -6,7 +6,7 @@ using CustomAssetsBackend.Misc;
 
 namespace CustomAssetsBackend.SpriteSheet.NGUI;
 
-public class NGUISpriteSheetManager(string il2CppFolderPath) : SpriteSheetManager(il2CppFolderPath)
+public class NGUISpriteSheetManager(string il2CppFolderPath, string obbPath) : SpriteSheetManager(il2CppFolderPath, obbPath)
 {
     public override CommonUtils.ReturnCode Load()
     {
@@ -24,11 +24,11 @@ public class NGUISpriteSheetManager(string il2CppFolderPath) : SpriteSheetManage
                 return CommonUtils.ReturnCode.NoSpriteSheetFound;
             }
             
-            var am = CommonUtils.InitAssetManager(Path.GetDirectoryName(uiAtlasAsset.Path)!);
+            var am = InitAssetManager(Path.GetDirectoryName(uiAtlasAsset.Path)!);
 
             Logger.Log("Extracting atlas png..");
 
-            this.ExportTexture2D(am, texture2dAsset, CommonUtils.AtlasImagePath);
+            ExportTexture2D(am, texture2dAsset, CommonUtils.AtlasImagePath);
 
             Logger.Log("Extracting atlas png.. Done!");
 
@@ -122,7 +122,7 @@ public class NGUISpriteSheetManager(string il2CppFolderPath) : SpriteSheetManage
             return CommonUtils.ReturnCode.NoSpriteSheetFound;
         }
         
-        var am = CommonUtils.InitAssetManager(Path.GetDirectoryName(uiAtlasAssets.First().Path)!);
+        var am = InitAssetManager(Path.GetDirectoryName(uiAtlasAssets.First().Path)!);
             
         var textureFileInst = am.LoadAssetsFile(texture2dAsset.Path);
         var textureAssetInfo = textureFileInst.file.GetAssetInfo(texture2dAsset.PathId);
@@ -139,8 +139,8 @@ public class NGUISpriteSheetManager(string il2CppFolderPath) : SpriteSheetManage
             Logger.Log("Failed to replace the atlas image!", Logger.LogLevel.Exception, err);
             return CommonUtils.ReturnCode.TextureReplaceFailed;
         }
-        
-        SaveAssetsFile(am, textureFileInst, textureAssetInfo, textureBaseField, texture2dAsset.Path);
+
+        SaveAssetsFile(am, textureFileInst, textureAssetInfo, textureBaseField);
         
         Logger.Log("Replacing atlas image.. Done!");
 
@@ -188,7 +188,7 @@ public class NGUISpriteSheetManager(string il2CppFolderPath) : SpriteSheetManage
                 mSprites.Children.Add(spriteTemplate);
             }
 
-            SaveAssetsFile(am, uiAtlasFileInst, uiAtlasInfo, atlasBase, uiAtlasAsset.Path);
+            SaveAssetsFile(am, uiAtlasFileInst, uiAtlasInfo, atlasBase);
         }
 
         Logger.Log("Reconstructing sprite data.. Done!");

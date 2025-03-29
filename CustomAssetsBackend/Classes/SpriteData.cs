@@ -1,7 +1,25 @@
-﻿namespace CustomAssetsBackend.Classes;
+﻿using System.Numerics;
+
+namespace CustomAssetsBackend.Classes;
 
 public class SpriteData : IEquatable<SpriteData>
 {
+    public SpriteData()
+    {
+    }
+    
+    public SpriteData(SpriteData other)
+    {
+        Name = other.Name;
+        StartX = other.StartX;
+        StartY = other.StartY;
+        EndX = other.EndX;
+        EndY = other.EndY;
+        Width = other.Width;
+        Height = other.Height;
+        OriginPoint = new Vector2(other.OriginPoint.X, other.OriginPoint.Y);
+    }
+
     public string Name { get; set; }
     public double StartX { get; set; }
     public double StartY { get; set; }
@@ -9,7 +27,7 @@ public class SpriteData : IEquatable<SpriteData>
     public double EndY { get; set; }
     public double Width { get; set; }
     public double Height { get; set; }
-    public System.Numerics.Vector2 OriginPoint { get; set; } = new(0.5f, 0.5f);
+    public Vector2 OriginPoint { get; set; } = new(0.5f, 0.5f);
 
     public bool Equals(SpriteData? other)
     {

@@ -2,14 +2,13 @@
 using LibCpp2IL;
 using LibCpp2IL.Metadata;
 using LibCpp2IL.Reflection;
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
-using AssetRipper.Primitives;
-using UnityVersion = AssetsTools.NET.Extra.UnityVersion;
-
-// we need our own version of this package
-// because the version currently on nuget uses an old libcpp2il version
-// which doesnt support metadata version 23 (abe's version)
+using ARUnityVersion = AssetRipper.Primitives.UnityVersion;
+using ATUnityVersion = AssetsTools.NET.Extra.UnityVersion;
 
 namespace AssetsTools.NET.Cpp2IL
 {
@@ -17,8 +16,7 @@ namespace AssetsTools.NET.Cpp2IL
     {
         private readonly string _globalMetadataPath;
         private readonly string _assemblyPath;
-        private AssetRipper.Primitives.UnityVersion? _il2cppUnityVersion;
-        private UnityVersion _unityVersion;
+        private ATUnityVersion _unityVersion;
         private bool _initialized;
         private bool anyFieldIsManagedReference;
 
@@ -37,71 +35,55 @@ namespace AssetsTools.NET.Cpp2IL
         public void ResetCpp2IL()
         {
             LibCpp2IlMain.Reset();
-            _il2cppUnityVersion = null;
+            _unityVersion = null;
             _initialized = false;
         }
 
-        public UnityVersionType TypeStringToUnityVersionType(string type)
-        {
-            return type switch
-            {
-                "a" => UnityVersionType.Alpha,
-                "b" => UnityVersionType.Beta,
-                "c" => UnityVersionType.China,
-                "f" => UnityVersionType.Final,
-                "p" => UnityVersionType.Patch,
-                "x" => UnityVersionType.Experimental,
-                _ => UnityVersionType.MaxValue
-            };
-        }
-
-        public void SetUnityVersion(UnityVersion unityVersion)
+        public void SetUnityVersion(ATUnityVersion unityVersion)
         {
             LibCpp2IlMain.Reset();
             _unityVersion = unityVersion;
-            
-            _il2cppUnityVersion = new AssetRipper.Primitives.UnityVersion(
-                (ushort)unityVersion.major,
-                (ushort)unityVersion.minor,
-                (ushort)unityVersion.patch,
-                TypeStringToUnityVersionType(unityVersion.type),
-                (byte)unityVersion.typeNum);
-            
+            _initialized = false;
+        }
+
+        public void SetUnityVersion(ARUnityVersion unityVersion)
+        {
+            LibCpp2IlMain.Reset();
+            _unityVersion = new ATUnityVersion(unityVersion.ToString());
             _initialized = false;
         }
 
         public void SetUnityVersion(int major, int minor, int patch)
         {
             LibCpp2IlMain.Reset();
-            _unityVersion = new UnityVersion(major + "." + minor + "." + patch);
-            _il2cppUnityVersion = new AssetRipper.Primitives.UnityVersion((ushort)major, (ushort)minor, (ushort)patch);
+            _unityVersion = new ATUnityVersion(major + "." + minor + "." + patch);
             _initialized = false;
         }
 
         public void InitializeCpp2IL()
         {
-            if (!LibCpp2IlMain.LoadFromFile(_assemblyPath, _globalMetadataPath, _il2cppUnityVersion!.Value))
+            ARUnityVersion arUnityVersion = ARUnityVersion.Parse(_unityVersion.ToString());
+            if (!LibCpp2IlMain.LoadFromFile(_assemblyPath, _globalMetadataPath, arUnityVersion))
             {
-                throw new Exception("CPP2IL initialization failed!");
+                throw new Exception("Cpp2Il initialization failed");
             }
+            
             _initialized = true;
         }
 
-        public AssetTypeTemplateField GetTemplateField(AssetTypeTemplateField baseField, string assemblyName, string nameSpace, string className, UnityVersion unityVersion)
+        public AssetTypeTemplateField GetTemplateField(AssetTypeTemplateField baseField, string assemblyName, string nameSpace, string className, ATUnityVersion unityVersion)
         {
-            if (_il2cppUnityVersion == null)
+            int[] il2cppUnityVersion = new[] { unityVersion.major, unityVersion.minor, unityVersion.patch };
+            if (!_initialized)
             {
                 SetUnityVersion(unityVersion);
                 InitializeCpp2IL();
             }
-            else if (_il2cppUnityVersion.Value.Major != unityVersion.major || 
-                     _il2cppUnityVersion.Value.Minor != unityVersion.minor || 
-                     _il2cppUnityVersion.Value.Build != unityVersion.patch)
+            else if (_unityVersion.major != unityVersion.major || _unityVersion.minor != unityVersion.minor || _unityVersion.patch != unityVersion.patch)
             {
-                Debug.WriteLine("Warning: This unity version does not match what CPP2IL was registered with. Call ResetUnityVersion().");
+                Debug.WriteLine("Warning: This unity version does not match what Cpp2Il was registered with. Call ResetUnityVersion().");
             }
 
-            _unityVersion = unityVersion;
             anyFieldIsManagedReference = false;
 
             Il2CppMetadata meta = LibCpp2IlMain.TheMetadata;
@@ -145,7 +127,7 @@ namespace AssetsTools.NET.Cpp2IL
         {
             List<string> attributeNames = new List<string>();
 
-            var attributeTypeRange = LibCpp2IlMain.TheMetadata.GetCustomAttributeData(image, field.customAttributeIndex, field.token, out var idx);
+            var attributeTypeRange = LibCpp2IlMain.TheMetadata.GetCustomAttributeData(image, field.customAttributeIndex, field.token, out int idx);
 
             if (attributeTypeRange == null)
             {
@@ -203,13 +185,18 @@ namespace AssetsTools.NET.Cpp2IL
 
                 if (fieldTypeDef.typeRef.isArray)
                 {
-                    isArrayOrList = fieldTypeDef.typeRef.arrayRank == 1;
-                    fieldTypeDef = fieldTypeDef.typeRef.arrayType;
+                    isArrayOrList = fieldTypeDef.typeRef.arrayRank == 1; // isn't this always true?
+                    if (isArrayOrList)
+                    {
+                        // resolidify the type to match the actual element
+                        // back to its original type if it's a generic one
+                        fieldTypeDef = type.SolidifyType(fieldTypeDef.typeRef.arrayType);
+                    }
                 }
                 else if (fieldTypeDef.typeDef.FullName == "System.Collections.Generic.List`1")
                 {
-                    fieldTypeDef = fieldTypeDef.typeRef.genericParams[0];
                     isArrayOrList = true;
+                    fieldTypeDef = fieldTypeDef.typeRef.genericParams[0];
                 }
 
                 List<string> attributeNames = GetAttributeNamesOnField(type.typeDef.DeclaringAssembly, fieldDef);
@@ -267,10 +254,6 @@ namespace AssetsTools.NET.Cpp2IL
                 else if (isSerializable)
                 {
                     field.Children = Serialized(fieldTypeDef, availableDepth);
-                }
-                else
-                {
-                    Console.WriteLine("you wot mate");
                 }
 
                 field.ValueType = AssetTypeValueField.GetValueTypeByTypeName(field.Type);
@@ -334,7 +317,8 @@ namespace AssetsTools.NET.Cpp2IL
                             {
                                 continue;
                             }
-                            solidifiedFieldType = elemType;
+                            // resolidify type
+                            solidifiedFieldType = parentType.SolidifyType(elemType);
                         }
                         // unity doesn't serialize a field of the same type as declaring type
                         // unless it inherits from UnityEngine.Object
@@ -462,7 +446,7 @@ namespace AssetsTools.NET.Cpp2IL
                 "GUIStyle" => CommonMonoTemplateHelper.GUIStyle(_unityVersion),
                 "Vector2Int" => CommonMonoTemplateHelper.Vector2Int(),
                 "Vector3Int" => CommonMonoTemplateHelper.Vector3Int(),
-                //"PropertyName" => CommonMonoTemplateHelper.PropertyName(), todo: ????
+                "PropertyName" => CommonMonoTemplateHelper.PropertyName(),
                 _ => Serialized(type, availableDepth)
             };
         }

@@ -55,6 +55,11 @@ public class Sprite : TransformControlRectangle
             m_SpriteData.StartY = Canvas.GetTop(this);
             m_SpriteData.EndY = Canvas.GetBottom(this);
 
+            m_SpriteData.Width = this.Width;
+            m_SpriteData.Height = this.Height;
+
+            m_SpriteData.OriginPoint = OriginPoint;
+
             return m_SpriteData;
         }
         set => m_SpriteData = value;
@@ -75,11 +80,11 @@ public class Sprite : TransformControlRectangle
         Canvas.SetRight(this, data.EndX);
         Canvas.SetBottom(this, data.EndY);
         
-        SpriteData = data;
+        SpriteData = new SpriteData(data);
         
-        SpriteName = SpriteData.Name;
-        Width = SpriteData.Width;
-        Height = SpriteData.Height;
+        SpriteName = data.Name;
+        Width = data.Width;
+        Height = data.Height;
         
         Fill = new SolidColorBrush(Colors.White, 0.12);
         Stroke = new SolidColorBrush(Colors.White, 0.5);
@@ -93,7 +98,7 @@ public class Sprite : TransformControlRectangle
         PointerExited += Sprite_PointerExited;
     }
 
-    public override SpriteData AsSpriteData() => SpriteData;
+    public override SpriteData AsSpriteData() => new SpriteData(SpriteData);
 
     private async void Sprite_PointerEntered(object? sender, PointerEventArgs e)
     {
@@ -104,14 +109,14 @@ public class Sprite : TransformControlRectangle
         Fill = new SolidColorBrush(Colors.White, 0.31);
         
         // spawn tooltip
-        await Task.Run((Func<Task>)(async () =>
+        await Task.Run(async () =>
         {
             await Task.Delay(1000); // 1 second wait
             if (m_IsPointerOver && !m_IsClicking)
             {
                Dispatcher.UIThread.Post(() => m_ToolTip.IsEnabled = true);
             }
-        }));
+        });
     }
     
     private void Sprite_PointerExited(object? sender, PointerEventArgs e)

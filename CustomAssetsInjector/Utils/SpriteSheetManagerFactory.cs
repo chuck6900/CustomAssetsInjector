@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using AssetsTools.NET.Cpp2IL;
 using AssetsTools.NET.Extra;
 using Avalonia.Media;
+using CustomAssetsBackend;
 using CustomAssetsBackend.Classes;
 using CustomAssetsBackend.Misc;
 using CustomAssetsBackend.SpriteSheet;
@@ -49,7 +49,6 @@ public static class SpriteSheetManagerFactory
         prefs.AssetCache.AddRange(newCachedItems);
         
         PreferenceService.SetPrefs(prefs);
-        PreferenceService.SavePrefs();
     }
 
     public static (CommonUtils.ReturnCode, SpriteSheetManager?) CreateSpriteSheetManager(string atlasName, bool lowRes, CancellationToken? token = null)
@@ -70,13 +69,13 @@ public static class SpriteSheetManagerFactory
             return (CommonUtils.ReturnCode.NoObb, null);
             
         // create an AssetsManager
-        var am = CommonUtils.InitAssetManager(AppBundleManager.ObbExtractFolderPath);
+        var am = UnityAssetManager.InitAssetManager(AppBundleManager.ObbExtractFolderPath);
 
         var nguiSpriteSheetsFound = 0;
         var foundSmoothMovesSpriteSheet = false;
         
-        var nguiMgr = new NGUISpriteSheetManager(AppBundleManager.Il2CppExtractFolderPath);
-        var smoothMovesManager = new SmoothMovesSpriteSheetManager(AppBundleManager.Il2CppExtractFolderPath);
+        var nguiMgr = new NGUISpriteSheetManager(AppBundleManager.Il2CppExtractFolderPath, AppBundleManager.ObbExtractFolderPath);
+        var smoothMovesManager = new SmoothMovesSpriteSheetManager(AppBundleManager.Il2CppExtractFolderPath, AppBundleManager.ObbExtractFolderPath);
         
         // check cache
         var cachedAsset = m_SpriteSheetCache.FirstOrDefault(cache => cache.Name == atlasName && cache.IsLowRes == lowRes);

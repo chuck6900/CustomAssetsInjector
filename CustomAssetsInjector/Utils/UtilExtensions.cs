@@ -22,6 +22,13 @@ public static class UtilExtensions
         element.IsEnabled = active;
         element.IsVisible = active;
     }
+
+    public static Window? GetMainWindow()
+    {
+        if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime app)
+            return null;
+        return app.MainWindow;
+    }
     
     public static IClipboard? GetClipboard() 
     {

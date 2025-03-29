@@ -1,11 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net9.0</TargetFramework>
         <Nullable>enable</Nullable>
         <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
         <ApplicationManifest>app.manifest</ApplicationManifest>
         <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+        <LangVersion>default</LangVersion>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -31,11 +32,9 @@
         
         <PackageReference Include="BinToss.GroupBox.Avalonia" Version="1.0.0" />
         
-        <PackageReference Include="OggVorbisEncoder" Version="1.2.2" />
-        
         <PackageReference Include="RectpackSharp" Version="1.2.0" />
         
-        <PackageReference Include="SixLabors.ImageSharp" Version="3.1.5" />
+        <PackageReference Include="SixLabors.ImageSharp" Version="3.1.7" />
 
         <Reference Include="AssetsTools.NET">
             <HintPath>..\Libs\AssetsTools.NET.dll</HintPath>

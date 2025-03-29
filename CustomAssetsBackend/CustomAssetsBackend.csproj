@@ -1,14 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net9.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <PublishAot>true</PublishAot>
+        <LangVersion>default</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>
       <PackageReference Include="AssetRipper.TextureDecoder" Version="2.2.1" />
+      <PackageReference Include="TagLibSharp" Version="2.3.0" />
         <Reference Include="AssetsTools.NET">
             <HintPath>..\Libs\AssetsTools.NET.dll</HintPath>
         </Reference>
@@ -16,9 +18,8 @@
             <HintPath>..\Libs\AssetsTools.NET.Texture.dll</HintPath>
         </Reference>
       <PackageReference Include="FFMpegCore" Version="5.1.0" />
-      <PackageReference Include="NAudio" Version="2.2.1" />
       <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-      <PackageReference Include="SixLabors.ImageSharp" Version="3.1.5" />
+      <PackageReference Include="SixLabors.ImageSharp" Version="3.1.7" />
     </ItemGroup>
 
     <ItemGroup>
@@ -39,6 +40,15 @@
         <AutoGen>True</AutoGen>
         <DependentUpon>Resources.resx</DependentUpon>
       </Compile>
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="Audio\OggVorbis2FSB5Wrapper\oggvorbis2fsb5.exe">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Audio\FFMpeg\ffmpeg.exe">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
     </ItemGroup>
 
 </Project>

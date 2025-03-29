@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Platform.Storage;
 
 namespace CustomAssetsInjector.Utils;
 
-public static class FileDialogUtils
+public static class  FileDialogUtils
 {
     /// <summary>
     /// Opens a file picker where the user can select a single file.
@@ -97,11 +98,39 @@ public static class FileDialogUtils
         return folders.Count > 0 ? folders[0] : null;
     }
     
-    public static FilePickerFileType ApkFile => new("APK") { Patterns = ["*.apk"] };
+    public static FilePickerFileType APKFile => new("APK") { Patterns = ["*.apk"] };
     
-    public static FilePickerFileType IpaFile => new("IPA") { Patterns = ["*.ipa"] };
+    public static FilePickerFileType IPAFile => new("IPA") { Patterns = ["*.ipa"] };
     
-    public static FilePickerFileType PngFile => new("PNG") { Patterns = ["*.png"] };
+    public static FilePickerFileType PNGFile => new("PNG") { Patterns = ["*.png"] };
     
-    public static FilePickerFileType JsonFile => new("JSON") { Patterns = ["*.json"] };
+    public static FilePickerFileType JSONFile => new("JSON") { Patterns = ["*.json"] };
+    
+    public static FilePickerFileType MP3File => new("MP3") { Patterns = ["*.mp3"] };
+    
+    public static FilePickerFileType WAVFile => new("WAV") { Patterns = ["*.wav"] };
+    
+    public static FilePickerFileType OGGFile => new("OGG") { Patterns = ["*.ogg"] };
+    
+    public static FilePickerFileType AACFile => new("AAC") { Patterns = ["*.aac"] };
+
+    public static FilePickerFileType AudioFiles => new("Audio files")
+    {
+        Patterns = new List<FilePickerFileType>
+        {
+            MP3File, 
+            WAVFile, 
+            OGGFile, 
+            AACFile
+        }.SelectMany(type => type.Patterns!).ToList()
+    };
+    
+    public static FilePickerFileType BundleFiles => new("APK and IPA files")
+    {
+        Patterns = new List<FilePickerFileType>
+        {
+            APKFile, 
+            IPAFile
+        }.SelectMany(type => type.Patterns!).ToList()
+    };
 }

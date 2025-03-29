@@ -1,0 +1,76 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:views="clr-namespace:CustomAssetsInjector.Views"
+        xmlns:gb="clr-namespace:GroupBox.Avalonia.Controls;assembly=GroupBox.Avalonia"
+        mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="400"
+        x:Class="CustomAssetsInjector.Views.AudioEditorWindow"
+        x:DataType="views:AudioEditorWindow"
+        Title="Angry Birds Epic - CustomAssetsInjector - Audio editor"
+        TransparencyLevelHint="AcrylicBlur"
+        Background="Transparent"
+        MinWidth="600"
+        MinHeight="600"
+        Width="600"
+        Height="600">
+    
+    <Panel>
+        <ExperimentalAcrylicBorder IsHitTestVisible="False" Material="{StaticResource DarkAcrylicMaterial}"/>
+        <StackPanel>
+            <Label Margin="10" CornerRadius="5" Height="50" HorizontalAlignment="Stretch" VerticalContentAlignment="Center" HorizontalContentAlignment="Center">Audio editor</Label>
+            
+            <TextBox Name="NameIdInput" Height="45" CornerRadius="5" UseFloatingWatermark="True" Watermark="Name of your audio in balancing" Margin="10"
+                     HorizontalAlignment="Stretch" VerticalContentAlignment="Center">Music1</TextBox>
+            
+            <gb:GroupBox Header="Sound settings" Theme="{StaticResource GroupBoxClassic}" Margin="10 0 10 10">
+                <StackPanel>
+                    <Label Margin="0 5 0 0">Channel:</Label>
+                    <Grid ColumnDefinitions="Auto Auto" Margin="5 0">
+                        <RadioButton Grid.Column="0" Name="MusicChannelRadioButton" IsCheckedChanged="SetRecommendedSource" Margin="5" GroupName="Channel" IsChecked="True">Music</RadioButton>
+                        <RadioButton Grid.Column="1" Name="SoundChannelRadioButton" Margin="5" GroupName="Channel">Sound</RadioButton>
+                    </Grid>
+                    
+                    <Label Margin="0 5 0 0" >Play mode:</Label>
+                    <Grid ColumnDefinitions="Auto Auto" Margin="5 0">
+                        <RadioButton Grid.Column="0" Name="LoopingRadioButton" Margin="5" GroupName="PlayMode" IsChecked="True">Looping</RadioButton>
+                        <RadioButton Grid.Column="1" Name="OneshotRadioButton" Margin="5" GroupName="PlayMode">Oneshot</RadioButton>
+                    </Grid>
+                    
+                    <Label Margin="0 5 0 0">Music source:</Label>
+                    <Grid ColumnDefinitions="Auto Auto Auto" Margin="5 0">
+                        <RadioButton Grid.Column="0" Name="PrimaryMusicSourceRadioButton" Margin="5" IsChecked="True" GroupName="MusicSource">Primary source (recommended)</RadioButton>
+                        <RadioButton Grid.Column="1" Name="SecondaryMusicSourceRadioButton" Margin="5" GroupName="MusicSource">Secondary source</RadioButton>
+                        <RadioButton Grid.Column="2" Name="SoundSourceRadioButton" Margin="5" GroupName="MusicSource"
+                                     IsEnabled="{Binding #SoundChannelRadioButton.IsChecked}">Sound source</RadioButton>
+                    </Grid>
+                    
+                    <Label Margin="0 5 0 0">Crossfade:</Label>
+                    <Grid ColumnDefinitions="Auto *" Margin="5 0" IsEnabled="{Binding #MusicChannelRadioButton.IsChecked}">
+                        <CheckBox Grid.Column="0" Name="CrossfadeCheckBox" Margin="5" CornerRadius="5" VerticalAlignment="Center" IsChecked="True"
+                                  IsEnabled="{Binding #MusicChannelRadioButton.IsChecked}" />
+                        <NumericUpDown Grid.Column="1" Name="CrossfadeLengthInput" Margin="5" CornerRadius="5" Watermark="Crossfade length (seconds)"
+                                 Minimum="0" Increment="0.1" Maximum="10" FormatString="0.0s" Value="0.5"
+                                 IsEnabled="{Binding #CrossfadeCheckBox.IsChecked}" />
+                    </Grid>
+                    
+                    <Label Margin="0 5 0 0">Volume change:</Label>
+                    <Grid ColumnDefinitions="Auto *" Margin="5 0">
+                        <CheckBox Grid.Column="0" Name="VolumeChangeCheckBox" Margin="5" CornerRadius="5" VerticalAlignment="Center" />
+                        <NumericUpDown Grid.Column="1" Name="VolumeInput" Margin="5" CornerRadius="5" Watermark="Volume percent (0-100%)"
+                                       Minimum="0" Increment="0.01" Maximum="1" FormatString="0%" Value="1"
+                                       IsEnabled="{Binding #VolumeChangeCheckBox.IsChecked}" />
+                    </Grid>
+                </StackPanel>
+            </gb:GroupBox>
+            
+            <ProgressBar Name="Progress" IsEnabled="False" IsVisible="False" Height="25" ShowProgressText="True" CornerRadius="5" Margin="10" Value="100" ProgressTextFormat="Loading.." />
+            
+            <Button Name="LoadAudioButton" Margin="10 10 10 10" CornerRadius="5" Height="50" HorizontalAlignment="Stretch" 
+                    VerticalContentAlignment="Center" HorizontalContentAlignment="Center">Select an audio file</Button>
+            
+            <Button Name="InjectButton" IsEnabled="False" Margin="10 0 10 10" CornerRadius="5" Height="50"
+                    HorizontalAlignment="Stretch" VerticalContentAlignment="Center" HorizontalContentAlignment="Center">Inject</Button>
+        </StackPanel>
+    </Panel>
+</Window>

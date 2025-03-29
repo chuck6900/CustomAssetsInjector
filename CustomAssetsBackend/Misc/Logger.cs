@@ -26,12 +26,11 @@ public static class Logger
                     LogAction.Invoke(message);
                 else
                     Console.WriteLine(message);
-                
                 break;
             case LogLevel.Debug:
-#if DEBUG
+                #if DEBUG
                 Console.WriteLine(message);
-#endif
+                #endif
                 break;
             case LogLevel.Exception:
                 ExceptionAction?.Invoke(message, err ?? new Exception("No exception was passed."));

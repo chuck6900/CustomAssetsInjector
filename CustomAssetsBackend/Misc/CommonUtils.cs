@@ -20,6 +20,8 @@ public static class CommonUtils
         ImportFailed,
         Cancelled,
         TextureReplaceFailed,
+        Fsb5EncodeFailed,
+        AlreadyInitialized
     }
 
     public static readonly string HomeAppDataPath = Path.Combine(GetAppDataPath(), "CustomAssetsInjector");
@@ -96,25 +98,5 @@ public static class CommonUtils
         double mappedValue = (value - inMin) / (inMax - inMin) * (outMax - outMin) + outMin;
 
         return mappedValue;
-    }
-    
-    /// <summary>
-    /// Initializes an <see cref="AssetsManager"/> with the necessary class database.
-    /// </summary>
-    /// <returns>An <see cref="AssetsManager"/> instance with a loaded class database.</returns>
-    public static AssetsManager InitAssetManager(string obbPath)
-    {
-        // create an AssetsManager
-        var am = new AssetsManager();
-        using (var classData = new MemoryStream(Resources.ClassDatabase))
-            am.LoadClassPackage(classData);
-            
-        // load globalgamemanagers so we can load a class database for the unity version
-        var ggm = am.LoadAssetsFile(Path.Combine(obbPath, "globalgamemanagers"), false);
-        am.LoadClassDatabaseFromPackage(ggm.file.Metadata.UnityVersion);
-
-        am.UnloadAssetsFile(ggm);
-        
-        return am;
     }
 }

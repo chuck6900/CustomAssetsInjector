@@ -7,8 +7,24 @@ using CustomAssetsBackend.Misc;
 
 namespace CustomAssetsBackend.SpriteSheet.SmoothMoves;
 
-public class SmoothMovesSpriteSheetManager(string il2CppFolderPath) : SpriteSheetManager(il2CppFolderPath)
+public struct HeadgearSprite
 {
+    public SpriteData Data { get; set; }
+    public Vector2 Position { get; set; }
+    public Vector2 Scale { get; set; }
+}
+
+public struct Headgear
+{
+    public string Name { get; set; }
+    public HeadgearSprite FrontSprite { get; set; }
+    public HeadgearSprite BackSprite { get; set; }
+}
+
+public class SmoothMovesSpriteSheetManager(string il2CppFolderPath, string obbPath) : SpriteSheetManager(il2CppFolderPath, obbPath)
+{
+    protected override string PathInResources => "Prefabs/0_Generic/1_Interface/BirdEquipment/Headgear/6_CustomAssetsInjector/";
+
     public override CommonUtils.ReturnCode Load()
     {
         try
@@ -25,7 +41,7 @@ public class SmoothMovesSpriteSheetManager(string il2CppFolderPath) : SpriteShee
                 return CommonUtils.ReturnCode.NoSpriteSheetFound;
             }
             
-            var am = CommonUtils.InitAssetManager(Path.GetDirectoryName(monoBehaviourAsset.Path)!);
+            var am = InitAssetManager(Path.GetDirectoryName(monoBehaviourAsset.Path)!);
 
             // Logger.Log($"Texture2D AssetInfo: {texture2dAsset}", Logger.LogLevel.Debug);
             // Logger.Log($"MonoBehaviour AssetInfo: {monoBehaviourAsset}", Logger.LogLevel.Debug);
@@ -34,8 +50,8 @@ public class SmoothMovesSpriteSheetManager(string il2CppFolderPath) : SpriteShee
             // load texture2d
 
             Logger.Log("Extracting atlas png..");
-            
-            this.ExportTexture2D(am, texture2dAsset, CommonUtils.AtlasImagePath);
+
+            ExportTexture2D(am, texture2dAsset, CommonUtils.AtlasImagePath);
             
             Logger.Log("Extracting atlas png.. Done!");
 
@@ -143,7 +159,7 @@ public class SmoothMovesSpriteSheetManager(string il2CppFolderPath) : SpriteShee
             return CommonUtils.ReturnCode.NoSpriteSheetFound;
         }
         
-        var am = CommonUtils.InitAssetManager(Path.GetDirectoryName(monoBehaviourAsset.Path)!);
+        var am = InitAssetManager(Path.GetDirectoryName(monoBehaviourAsset.Path)!);
             
         var textureFileInst = am.LoadAssetsFile(texture2dAsset.Path);
         var textureAssetInfo = textureFileInst.file.GetAssetInfo(texture2dAsset.PathId);
@@ -158,8 +174,8 @@ public class SmoothMovesSpriteSheetManager(string il2CppFolderPath) : SpriteShee
             Logger.Log("Failed to replace the atlas image!", Logger.LogLevel.Exception, err);
             return CommonUtils.ReturnCode.TextureReplaceFailed;
         }
-        
-        SaveAssetsFile(am, textureFileInst, textureAssetInfo, textureBaseField, texture2dAsset.Path);
+
+        SaveAssetsFile(am, textureFileInst, textureAssetInfo, textureBaseField);
         
         Logger.Log("Replacing atlas image.. Done!");
 
@@ -191,76 +207,74 @@ public class SmoothMovesSpriteSheetManager(string il2CppFolderPath) : SpriteShee
         defaultPivotOffsets.Children.Clear();
         textureNames.Children.Clear();
         texturePaths.Children.Clear();
-
-        var (resWidth, resHeight) = CommonUtils.GetImageResolution(CommonUtils.AtlasImagePath);
         
         foreach (SmoothMovesSpriteData sprite in this.Sprites)
         {
-            var uvTemplate = ValueBuilder.DefaultValueFieldFromArrayTemplate(uvs);
-            var guidTemplate = ValueBuilder.DefaultValueFieldFromArrayTemplate(textureGuids);
-            var sizeTemplate = ValueBuilder.DefaultValueFieldFromArrayTemplate(textureSizes);
-            var pivotTemplate = ValueBuilder.DefaultValueFieldFromArrayTemplate(defaultPivotOffsets);
-            var nameTemplate = ValueBuilder.DefaultValueFieldFromArrayTemplate(textureNames);
-            var pathTemplate = ValueBuilder.DefaultValueFieldFromArrayTemplate(texturePaths);
-
-            // uvs
-            uvTemplate["x"].AsFloat = (float)sprite.StartX / resWidth;
-            uvTemplate["y"].AsFloat = (float)CommonUtils.MapValues(sprite.EndY, 0, resHeight, resHeight, 0) / resHeight;
-            uvTemplate["width"].AsFloat = (float)sprite.Width / resWidth;
-            uvTemplate["height"].AsFloat = (float)sprite.Height / resHeight;
-            
-            uvs.Children.Add(uvTemplate);
-            
-            // guids
-            guidTemplate.AsString = sprite.TextureGuid ?? CreateNewSmoothMovesGuid();
-            
-            textureGuids.Children.Add(guidTemplate);
-            
-            // texture sizes
-            sizeTemplate["x"].AsDouble = sprite.Width;
-            sizeTemplate["y"].AsDouble = sprite.Height;
-            
-            textureSizes.Children.Add(sizeTemplate);
-            
-            // defaultPivotOffsets (origin point)
-            pivotTemplate["x"].AsFloat = (float)CommonUtils.MapValues(sprite.OriginPoint.X, 0, 1, -0.5, 0.5);
-            pivotTemplate["y"].AsFloat = (float)CommonUtils.MapValues(sprite.OriginPoint.Y, 0, 1, -0.5, 0.5);
-            
-            defaultPivotOffsets.Children.Add(pivotTemplate);
-            
-            // texture names
-            nameTemplate.AsString = sprite.Name;
-            
-            textureNames.Children.Add(nameTemplate);
-            
-            // texture paths
-            pathTemplate.AsString = sprite.TexturePath ?? $"Assets/Heroic/CustomAssetsInjector/{sprite.Name}.png";
-            
-            texturePaths.Children.Add(pathTemplate);
+            CreateAndAddSpriteToObb(sprite, behaviourBase);
         }
         
         // regenerate lastBuildID because why not
         behaviourBase["lastBuildID"].AsString = DateTime.Now.ToString("yyyyMMddHHmmss") + new Random().Next(0, 1024);
 
-        SaveAssetsFile(am, monoBehaviourFileInst, behaviourInfo, behaviourBase, monoBehaviourAsset.Path);
+        SaveAssetsFile(am, monoBehaviourFileInst, behaviourInfo, behaviourBase);
             
         Logger.Log("Reconstructing MonoBehaviour.. Done!");
         
         return CommonUtils.ReturnCode.Success;
     }
 
-    public struct HeadgearSprite
+    private void CreateAndAddSpriteToObb(SmoothMovesSpriteData sprite, AssetTypeValueField behaviourBase)
     {
-        public SpriteData Data { get; set; }
-        public Vector2 Position { get; set; }
-        public Vector2 Scale { get; set; }
-    }
+        var (resWidth, resHeight) = CommonUtils.GetImageResolution(CommonUtils.AtlasImagePath);
+        
+        var uvs = behaviourBase["uvs.Array"];
+        var textureGuids = behaviourBase["textureGUIDs.Array"];
+        var textureSizes = behaviourBase["textureSizes.Array"];
+        var defaultPivotOffsets = behaviourBase["defaultPivotOffsets.Array"];
+        var textureNames = behaviourBase["textureNames.Array"];
+        var texturePaths = behaviourBase["texturePaths.Array"];
+        
+        var uvTemplate = ValueBuilder.DefaultValueFieldFromArrayTemplate(uvs);
+        var guidTemplate = ValueBuilder.DefaultValueFieldFromArrayTemplate(textureGuids);
+        var sizeTemplate = ValueBuilder.DefaultValueFieldFromArrayTemplate(textureSizes);
+        var pivotTemplate = ValueBuilder.DefaultValueFieldFromArrayTemplate(defaultPivotOffsets);
+        var nameTemplate = ValueBuilder.DefaultValueFieldFromArrayTemplate(textureNames);
+        var pathTemplate = ValueBuilder.DefaultValueFieldFromArrayTemplate(texturePaths);
 
-    public struct Headgear
-    {
-        public string Name { get; set; }
-        public HeadgearSprite FrontSprite { get; set; }
-        public HeadgearSprite BackSprite { get; set; }
+        // uvs
+        uvTemplate["x"].AsFloat = (float)sprite.StartX / resWidth;
+        uvTemplate["y"].AsFloat = (float)CommonUtils.MapValues(sprite.EndY, 0, resHeight, resHeight, 0) / resHeight;
+        uvTemplate["width"].AsFloat = (float)sprite.Width / resWidth;
+        uvTemplate["height"].AsFloat = (float)sprite.Height / resHeight;
+            
+        uvs.Children.Add(uvTemplate);
+            
+        // guids
+        guidTemplate.AsString = sprite.TextureGuid ?? CreateNewSmoothMovesGuid();
+            
+        textureGuids.Children.Add(guidTemplate);
+            
+        // texture sizes
+        sizeTemplate["x"].AsDouble = sprite.Width;
+        sizeTemplate["y"].AsDouble = sprite.Height;
+            
+        textureSizes.Children.Add(sizeTemplate);
+            
+        // defaultPivotOffsets (origin point)
+        pivotTemplate["x"].AsFloat = (float)CommonUtils.MapValues(sprite.OriginPoint.X, 0, 1, -0.5, 0.5);
+        pivotTemplate["y"].AsFloat = (float)CommonUtils.MapValues(sprite.OriginPoint.Y, 0, 1, -0.5, 0.5);
+            
+        defaultPivotOffsets.Children.Add(pivotTemplate);
+            
+        // texture names
+        nameTemplate.AsString = sprite.Name;
+        
+        textureNames.Children.Add(nameTemplate);
+            
+        // texture paths
+        pathTemplate.AsString = sprite.TexturePath ?? $"Assets/Heroic/CustomAssetsInjector/{sprite.Name}.png";
+            
+        texturePaths.Children.Add(pathTemplate);
     }
 
     public void CreateHeadgear(Headgear headgear, string obbPath)
@@ -269,7 +283,7 @@ public class SmoothMovesSpriteSheetManager(string il2CppFolderPath) : SpriteShee
         using var headgearTemplateStream = new MemoryStream(Resources.HeadgearTemplate);
         var destPath = Path.Combine(obbPath, headgear.Name);
 
-        var am = CommonUtils.InitAssetManager(obbPath);
+        var am = InitAssetManager(obbPath);
         
         var globalMetadataPath = Path.Combine(this.Il2CppFolderPath, "global-metadata.dat");
         var binaryPath = Path.Combine(this.Il2CppFolderPath, "il2cpp.binary");
@@ -413,12 +427,15 @@ public class SmoothMovesSpriteSheetManager(string il2CppFolderPath) : SpriteShee
 
         var rootSceneAssetPath = Path.Combine(obbPath, "level1");
         var rootSceneAsset = am.LoadAssetsFile(rootSceneAssetPath);
+
+        headgearAsset.file.Metadata.TargetPlatform = rootSceneAsset.file.Metadata.TargetPlatform;
             
         // chraeap = character high-res and equipment asset provider (headgear and equipment)
         
-        var chraeapInfo = rootSceneAsset.file.GetAssetInfo(120); // un-hardcode
+        var chraeapInfo = rootSceneAsset.file.GetAssetInfo(120); // todo: un-hardcode
         var chraeapBf = am.GetBaseField(rootSceneAsset, chraeapInfo);
 
+        // todo: there is probably a better way to check this earlier, check AudioInjector.cs
         if (chraeapBf["AssetInfos.Array"].Children.Any(info => info["NameId"].AsString == headgear.Name))
         {
             // headgear with same name already exists
@@ -431,37 +448,36 @@ public class SmoothMovesSpriteSheetManager(string il2CppFolderPath) : SpriteShee
             headgearAsset.file.Write(writer);
         }
         am.UnloadAssetsFile(headgearAsset);
-
-        var headgearDependency = new AssetsFileExternal
+        
+        var ggmPath = Path.Combine(ObbPath, "globalgamemanagers");
+        var ggmAsset = am.LoadAssetsFile(ggmPath);
+        var pathInResources = GetAssetResourcePath(headgear.Name);
+        
+        ggmAsset.file.Metadata.Externals.Add(new AssetsFileExternal
         {
             VirtualAssetPathName = string.Empty,
             PathName = Path.GetFileName(destPath),
             OriginalPathName = Path.GetFileName(destPath),
             Guid = default,
             Type = AssetsFileExternalType.Normal
-        };
-        if (!rootSceneAsset.file.Metadata.Externals.Contains(headgearDependency))
-            rootSceneAsset.file.Metadata.Externals.Add(headgearDependency);
+        });
+        
+        SaveToResources(am, ggmAsset, pathInResources, ggmAsset.file.Metadata.Externals.Count, 3);
         
         var editorAssetInfo = ValueBuilder.DefaultValueFieldFromArrayTemplate(chraeapBf["AssetInfos.Array"]);
         editorAssetInfo["NameId"].AsString = headgear.Name;
-        editorAssetInfo["AssetLink"]["m_FileID"].AsInt = rootSceneAsset.file.Metadata.Externals.IndexOf(headgearDependency) + 1;
-        editorAssetInfo["AssetLink"]["m_PathID"].AsLong = 3;
-        editorAssetInfo["AssetLoadingType"].AsInt = (int)LoadingType.FromMemory;
+        editorAssetInfo["AssetLoadingType"].AsInt = (int)LoadingType.FromResources;
+        editorAssetInfo["Path"].AsString = pathInResources;
+        editorAssetInfo["Extension"].AsString = "prefab";
         
         chraeapBf["AssetInfos.Array"].Children.Add(editorAssetInfo);
-            
-        SaveAssetsFile(am, rootSceneAsset, chraeapInfo, chraeapBf, rootSceneAssetPath);
+
+        SaveAssetsFile(am, rootSceneAsset, chraeapInfo, chraeapBf);
+        
+        am.UnloadAll();
+        
         Logger.Log("Assigning AssetID to prefab.. Done!");
         Logger.Log($"Headgear creation for '{headgear.Name}' done.");
-    }
-    
-    private enum LoadingType
-    {
-        FromResources,
-        FromMemory,
-        FromBundle,
-        FromStreamedBundle
     }
 
     /// <summary>

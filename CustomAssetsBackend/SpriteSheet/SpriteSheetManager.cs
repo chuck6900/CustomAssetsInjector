@@ -11,48 +11,14 @@ using SixLabors.ImageSharp.Processing;
 
 namespace CustomAssetsBackend.SpriteSheet;
 
-public abstract class SpriteSheetManager(string il2CppFolderPath)
+public abstract class SpriteSheetManager(string il2CppFolderPath, string obbPath) : UnityAssetManager(il2CppFolderPath, obbPath)
 { 
     public List<UnityAsset> AssetCache { get; } = new();
 
     public List<SpriteData> Sprites { get; } = new();
-
-    protected readonly string Il2CppFolderPath = il2CppFolderPath;
-
+    
     public UnityAsset GetCachedAssetOfType(UnityAsset.UnityObjectType type)
         => AssetCache.FirstOrDefault(asset => asset.ObjectType == type) ?? UnityAsset.Empty;
-
-    protected void ExportTexture2D(AssetsManager am, UnityAsset texture2dAsset, string imagePath)
-    {
-        var texture2DFileInst = am.LoadAssetsFile(texture2dAsset.Path);
-        var texture2DAtlasFile = texture2DFileInst.file;
-
-        // extract texture2d
-        var textureInf = texture2DAtlasFile.GetAssetInfo(texture2dAsset.PathId);
-        var textureBase = am.GetBaseField(texture2DFileInst, textureInf);
-
-        var texture = TextureFile.ReadTextureFile(textureBase); // load base field into helper class
-        var textureBgraRaw = texture.GetTextureData(texture2DFileInst); // get the raw bgra32 data
-        var textureImage = Image.LoadPixelData<Bgra32>(textureBgraRaw, texture.m_Width, texture.m_Height); // use imagesharp to convert to image
-        textureImage.Mutate(i => i.Flip(FlipMode.Vertical)); // flip on x-axis
-        textureImage.SaveAsPng(imagePath);
-    }
-    
-    public static void SaveAssetsFile(AssetsManager am, AssetsFileInstance file, AssetFileInfo info, AssetTypeValueField baseField, string destPath)
-    {
-        info.SetNewData(baseField);
-        
-        var newMbAssetPath = Path.GetTempFileName();
-            
-        using (var writer = new AssetsFileWriter(newMbAssetPath))
-        {
-            file.file.Write(writer);
-        }
-
-        am.UnloadAssetsFile(file);
-            
-        File.Replace(newMbAssetPath, destPath, null);
-    }
 
     public abstract CommonUtils.ReturnCode Load();
 
@@ -72,7 +38,7 @@ public abstract class SpriteSheetManager(string il2CppFolderPath)
         }
         
         // load asset
-        var am = CommonUtils.InitAssetManager(Path.GetDirectoryName(dataAsset.Path)!);
+        var am = InitAssetManager(Path.GetDirectoryName(dataAsset.Path)!);
             
         var globalMetadataPath = Path.Combine(this.Il2CppFolderPath, "global-metadata.dat");
         var binaryPath = Path.Combine(this.Il2CppFolderPath, "il2cpp.binary");
@@ -140,7 +106,7 @@ public abstract class SpriteSheetManager(string il2CppFolderPath)
         
         // load asset
         
-        var am = CommonUtils.InitAssetManager(Path.GetDirectoryName(dataAsset.Path)!);
+        var am = InitAssetManager(Path.GetDirectoryName(dataAsset.Path)!);
             
         var globalMetadataPath = Path.Combine(this.Il2CppFolderPath, "global-metadata.dat");
         var binaryPath = Path.Combine(this.Il2CppFolderPath, "il2cpp.binary");

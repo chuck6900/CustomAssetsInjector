@@ -21,6 +21,9 @@ public static class PreferenceService
     {
         [JsonInclude] 
         public List<CachedAsset> AssetCache { get; set; } = new();
+        
+        [JsonInclude] 
+        public List<string> OptedOutPopups { get; set; } = new();
     }
 
     private static Preferences m_Preferences = new();
@@ -74,8 +77,9 @@ public static class PreferenceService
 
     public static Preferences GetPrefs() => m_Preferences;
 
-    public static void SetPrefs(Preferences newPrefs)
+    public static void SetPrefs(Preferences newPrefs, bool autoSave = true)
     {
         m_Preferences = newPrefs;
+        SavePrefs();
     }
 }

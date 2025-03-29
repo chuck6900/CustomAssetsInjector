@@ -22,7 +22,7 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-
+        
         // menu buttons
         ResetApkButton.Click += ResetApk;
         ResetPrefsButton.Click += ResetPrefs;
@@ -34,6 +34,7 @@ public partial class MainWindow : Window
         // main buttons
         SelectApkButton.Click += SelectApk;
         SpritesheetEditorButton.Click += SpriteSheetEditorButton_OnClick;
+        AudioEditorButton.Click += AudioEditorButton_OnClick;
 
         this.Loaded += Initialize;
         this.Closing += delegate { PreferenceService.SavePrefs(); };
@@ -44,10 +45,13 @@ public partial class MainWindow : Window
         if (!AppBundleManager.CheckExtractedData())
             return;
         
+        var exportIsValidForIos = Directory.GetFiles(AppBundleManager.ObbExtractFolderPath).Contains(Path.Combine(AppBundleManager.ObbExtractFolderPath, "resources.assets"));
+        var exportIsValidForAndroid = !exportIsValidForIos;
+        
         var selectedBundleFile = await FileDialogUtils.PromptOpenFile(
             "Select the input file", 
             this.StorageProvider, 
-            [FileDialogUtils.ApkFile, FileDialogUtils.IpaFile]);
+            exportIsValidForAndroid ? [FileDialogUtils.APKFile, FileDialogUtils.IPAFile] : [FileDialogUtils.IPAFile, FileDialogUtils.APKFile]); // prefer the extracted bundle type
 
         if (selectedBundleFile == null || !File.Exists(selectedBundleFile.Path.LocalPath))
             return;
@@ -66,15 +70,8 @@ public partial class MainWindow : Window
             return;
         }
 
-        var exportIsValidForIos = 
-            ext == "IPA" &&
-            Directory.GetFiles(AppBundleManager.ObbExtractFolderPath)
-                .Contains(Path.Combine(AppBundleManager.ObbExtractFolderPath, "resources.assets"));
-        
-        var exportIsValidForAndroid = 
-            ext == "APK" &&
-            !Directory.GetFiles(AppBundleManager.ObbExtractFolderPath)
-                .Contains(Path.Combine(AppBundleManager.ObbExtractFolderPath, "resources.assets"));
+        exportIsValidForIos &= ext == "IPA";
+        exportIsValidForAndroid &= ext == "APK";
 
         if ((ext == "IPA" && !exportIsValidForIos) || (ext == "APK" && !exportIsValidForAndroid))
         {
@@ -94,7 +91,7 @@ public partial class MainWindow : Window
             this.StorageProvider, 
             null,
             ext.ToLowerInvariant(),
-            [ext == "APK" ? FileDialogUtils.ApkFile : FileDialogUtils.IpaFile]);
+            [ext == "APK" ? FileDialogUtils.APKFile : FileDialogUtils.IPAFile]);
 
         if (file == null)
             return;
@@ -117,6 +114,7 @@ public partial class MainWindow : Window
         Progress.IsIndeterminate = false;
         Progress.Minimum = 0; Progress.Maximum = 1; Progress.Value = 1;
         Logger.Log($"Successfully exported the modified {ext}!");
+        // todo: open the folder where it was saved
     }
 
     private void ResetPrefs(object? sender, RoutedEventArgs e)
@@ -127,7 +125,6 @@ public partial class MainWindow : Window
         Progress.ProgressTextFormat = "Resetting preferences..";
         
         PreferenceService.SetPrefs(new PreferenceService.Preferences());
-        PreferenceService.SavePrefs();
 
         Progress.Minimum = 0; Progress.Maximum = 1; Progress.Value = 1;
         Progress.IsIndeterminate = false;
@@ -184,6 +181,9 @@ public partial class MainWindow : Window
 
             Directory.CreateDirectory(AppBundleManager.Il2CppExtractFolderPath);
             await Task.Run(() => Directory.Delete(AppBundleManager.Il2CppExtractFolderPath, true));
+            
+            ProgressService.UpdateProgress(ProgressService.ApkResetProgressId, 0, true, null, null, "Resetting preferences..");
+            PreferenceService.SetPrefs(new PreferenceService.Preferences()); // don't use ResetPrefs because it calls Initialize
 
             ProgressService.UpdateProgress(ProgressService.ApkResetProgressId, 1, false, 0, 1, "Reset done!");
         }
@@ -198,7 +198,7 @@ public partial class MainWindow : Window
     {
         Dispatcher.UIThread.InvokeAsync(async () =>
         {
-            await MessageBox.ShowMessageBox(this, $"{message}\n\nPlease check CAIExceptionLog.txt in the application folder for more info.\n\nError: {err}", $"An exception has occured.");
+            await MessageBox.ShowMessageBox(this, $"{message}\n\nPlease check CAIExceptionLog.txt in the application folder for more info.\n\nError: {err}", "An exception has occured.");
         });
     }
     
@@ -250,7 +250,20 @@ public partial class MainWindow : Window
         Logger.LogAction -= LogAction;
         Logger.ExceptionAction -= ExceptionCallback;
         
-        this.Close();
+        this.Hide();
+    }
+    
+    private async void AudioEditorButton_OnClick(object? sender, RoutedEventArgs e)
+    {
+        new AudioEditorWindow().Show();
+        
+        ProgressService.DeRegisterProgress(ProgressService.ApkLoadingProgressId, true);
+        ProgressService.DeRegisterProgress(ProgressService.CreateBundleProgressId, true);
+        
+        Logger.LogAction -= LogAction;
+        Logger.ExceptionAction -= ExceptionCallback;
+        
+        this.Hide();
     }
     
     private async void SelectApk(object? sender, RoutedEventArgs e)
@@ -260,7 +273,7 @@ public partial class MainWindow : Window
         var file = await FileDialogUtils.PromptOpenFile(
             "Select APK or IPA File", 
             this.StorageProvider, 
-            [FileDialogUtils.ApkFile, FileDialogUtils.IpaFile]);
+            [FileDialogUtils.BundleFiles, FileDialogUtils.APKFile, FileDialogUtils.IPAFile]);
 
         if (file == null)
         {

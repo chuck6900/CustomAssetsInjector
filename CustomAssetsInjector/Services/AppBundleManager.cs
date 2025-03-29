@@ -236,7 +236,7 @@ public static class AppBundleManager
     }
     
     /// <summary>
-    /// Extracts the IL2CPP binary and the global metadata inside of a zip file to the specified.
+    /// Extracts the IL2CPP binary and the global metadata inside a zip file to the specified path.
     /// </summary>
     /// <param name="zipPath">The path of the zip to extract.</param>
     public static async Task<(string, string)> ExtractIl2CppData(string zipPath)
