@@ -10,6 +10,7 @@
 
     <ItemGroup>
         <PackageReference Include="StbImageSharp" Version="2.30.15" />
+        <PackageReference Include="StbImageWriteSharp" Version="1.16.7" />
         <Reference Include="AssetsTools.NET">
             <HintPath>..\Libs\AssetsTools.NET.dll</HintPath>
         </Reference>

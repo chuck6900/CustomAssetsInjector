@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using System.Diagnostics;
+using System.Numerics;
 using AssetsTools.NET;
 using AssetsTools.NET.Cpp2IL;
 using AssetsTools.NET.Extra;
@@ -194,6 +195,8 @@ public class SmoothMovesSpriteSheetManager(string il2CppFolderPath, string obbPa
         
         // clear fields, reconstruct data from scratch
         
+        var (resWidth, resHeight) = CommonUtils.GetImageResolution(CommonUtils.AtlasImagePath);
+        
         var uvs = behaviourBase["uvs.Array"];
         var textureGuids = behaviourBase["textureGUIDs.Array"];
         var textureSizes = behaviourBase["textureSizes.Array"];
@@ -210,7 +213,7 @@ public class SmoothMovesSpriteSheetManager(string il2CppFolderPath, string obbPa
         
         foreach (SmoothMovesSpriteData sprite in this.Sprites)
         {
-            CreateAndAddSpriteToObb(sprite, behaviourBase);
+            CreateAndAddSpriteToObb(sprite, behaviourBase, resWidth, resHeight);
         }
         
         // regenerate lastBuildID because why not
@@ -223,10 +226,8 @@ public class SmoothMovesSpriteSheetManager(string il2CppFolderPath, string obbPa
         return CommonUtils.ReturnCode.Success;
     }
 
-    private void CreateAndAddSpriteToObb(SmoothMovesSpriteData sprite, AssetTypeValueField behaviourBase)
+    private void CreateAndAddSpriteToObb(SmoothMovesSpriteData sprite, AssetTypeValueField behaviourBase, int resWidth, int resHeight)
     {
-        var (resWidth, resHeight) = CommonUtils.GetImageResolution(CommonUtils.AtlasImagePath);
-        
         var uvs = behaviourBase["uvs.Array"];
         var textureGuids = behaviourBase["textureGUIDs.Array"];
         var textureSizes = behaviourBase["textureSizes.Array"];

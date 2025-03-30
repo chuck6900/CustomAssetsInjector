@@ -10,6 +10,7 @@ public class NGUISpriteSheetManager(string il2CppFolderPath, string obbPath) : S
 {
     public override CommonUtils.ReturnCode Load()
     {
+        AssetsManager? am = null;
         try
         {
             Sprites.Clear();
@@ -18,13 +19,14 @@ public class NGUISpriteSheetManager(string il2CppFolderPath, string obbPath) : S
             var texture2dAsset = GetCachedAssetOfType(UnityAsset.UnityObjectType.Texture2D);
             var materialAsset = GetCachedAssetOfType(UnityAsset.UnityObjectType.Material);
 
-            if (uiAtlasAsset == UnityAsset.Empty || texture2dAsset == UnityAsset.Empty || materialAsset == UnityAsset.Empty)
+            if (uiAtlasAsset == UnityAsset.Empty || texture2dAsset == UnityAsset.Empty ||
+                materialAsset == UnityAsset.Empty)
             {
                 Logger.Log("An asset is missing! Returning.");
                 return CommonUtils.ReturnCode.NoSpriteSheetFound;
             }
-            
-            var am = InitAssetManager(Path.GetDirectoryName(uiAtlasAsset.Path)!);
+
+            am = InitAssetManager(Path.GetDirectoryName(uiAtlasAsset.Path)!);
 
             Logger.Log("Extracting atlas png..");
 
@@ -34,9 +36,9 @@ public class NGUISpriteSheetManager(string il2CppFolderPath, string obbPath) : S
 
             var globalMetadataPath = Path.Combine(this.Il2CppFolderPath, "global-metadata.dat");
             var binaryPath = Path.Combine(this.Il2CppFolderPath, "il2cpp.binary");
-            
+
             Logger.Log("Reading MonoBehaviour..");
-            
+
             am.MonoTempGenerator = new Cpp2IlTempGenerator(globalMetadataPath, binaryPath);
 
             // load uiatlas monobehaviour
@@ -57,17 +59,17 @@ public class NGUISpriteSheetManager(string il2CppFolderPath, string obbPath) : S
                 var startY = sprite["y"].AsInt;
                 var width = sprite["width"].AsInt;
                 var height = sprite["height"].AsInt;
-                
+
                 var borderLeft = sprite["borderLeft"].AsInt;
                 var borderRight = sprite["borderRight"].AsInt;
                 var borderTop = sprite["borderTop"].AsInt;
                 var borderBottom = sprite["borderBottom"].AsInt;
-                
+
                 var paddingLeft = sprite["paddingLeft"].AsInt;
                 var paddingRight = sprite["paddingRight"].AsInt;
-                var paddingTop = sprite["paddingTop"].AsInt ;
+                var paddingTop = sprite["paddingTop"].AsInt;
                 var paddingBottom = sprite["paddingBottom"].AsInt;
-                
+
                 Sprites.Add(new NGUISpriteData
                 {
                     Name = sprite["name"].AsString,
@@ -77,27 +79,29 @@ public class NGUISpriteSheetManager(string il2CppFolderPath, string obbPath) : S
                     EndY = startY + height,
                     Width = width,
                     Height = height,
-                    
+
                     BorderLeft = borderLeft,
                     BorderRight = borderRight,
                     BorderTop = borderTop,
                     BorderBottom = borderBottom,
-                    
+
                     PaddingLeft = paddingLeft,
                     PaddingRight = paddingRight,
                     PaddingTop = paddingTop,
                     PaddingBottom = paddingBottom
                 });
             }
-            
+
             Logger.Log("Reading MonoBehaviour.. Done!");
-            
-            am.UnloadAll();
         }
         catch (Exception err)
         {
             Logger.Log("Unknown error occured during spritesheet loading.", Logger.LogLevel.Exception, err);
             return CommonUtils.ReturnCode.UnknownError;
+        }
+        finally
+        {
+            am?.UnloadAll();
         }
 
         Logger.Log("Successfully loaded the NGUI atlas.");
@@ -137,6 +141,7 @@ public class NGUISpriteSheetManager(string il2CppFolderPath, string obbPath) : S
         if (!success || err != null)
         {
             Logger.Log("Failed to replace the atlas image!", Logger.LogLevel.Exception, err);
+            am.UnloadAll();
             return CommonUtils.ReturnCode.TextureReplaceFailed;
         }
 

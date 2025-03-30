@@ -2,6 +2,7 @@
 using AssetsTools.NET.Extra;
 using AssetsTools.NET.Texture;
 using CustomAssetsBackend.Classes;
+using CustomAssetsBackend.Misc;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
@@ -66,16 +67,17 @@ public class UnityAssetManager(string il2CppFolderPath, string obbPath)
     {
         var texture2DFileInst = am.LoadAssetsFile(texture2dAsset.Path);
         var texture2DAtlasFile = texture2DFileInst.file;
-
-        // extract texture2d
+        
         var textureInf = texture2DAtlasFile.GetAssetInfo(texture2dAsset.PathId);
         var textureBase = am.GetBaseField(texture2DFileInst, textureInf);
 
-        var texture = TextureFile.ReadTextureFile(textureBase); // load base field into helper class
-        var textureBgraRaw = texture.GetTextureData(texture2DFileInst); // get the raw bgra32 data
-        var textureImage = Image.LoadPixelData<Bgra32>(textureBgraRaw, texture.m_Width, texture.m_Height); // use imagesharp to convert to image
-        textureImage.Mutate(i => i.Flip(FlipMode.Vertical)); // flip on x-axis
-        textureImage.SaveAsPng(imagePath);
+        var texture = TextureFile.ReadTextureFile(textureBase);
+        var encTextureData = texture.FillPictureData(texture2DFileInst);
+        var success = texture.DecodeTextureImage(encTextureData, imagePath, ImageExportType.Png);
+        if (!success)
+        {
+            Logger.Log($"Failed to save '{textureBase["m_Name"]}' to '{imagePath}'!");
+        }
     }
     
     protected string GetAssetResourcePath(string nameId)

@@ -16,7 +16,7 @@ public static class TextureMain
 
         try
         {
-            tex.SetTextureData(newImagePath);
+            tex.EncodeTextureImage(newImagePath);
             tex.WriteTo(baseField);
         }
         catch (Exception err)

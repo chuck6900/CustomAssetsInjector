@@ -146,7 +146,7 @@
                                         <StackPanel>
                                                 <TextBox Name="AtlasNameInput" CornerRadius="5" Watermark="Input an atlas name here." Margin="3" Padding="10"></TextBox>
                                                 
-                                                <CheckBox Margin="3 3 3 10" Padding="5" Name="LowResToggle" Content="Low res (SmoothMoves only)" />
+                                                <CheckBox Margin="3 3 3 10" Padding="5" Name="LowResToggle" CornerRadius="5" Content="Low res (SmoothMoves only)" />
                                                 
                                                 <Button Name="LoadAndSaveAtlasButton" IsEnabled="False" Height="50" Margin="3" CornerRadius="5">Load atlas / Save atlas</Button>
                                                 <Button Name="ResetButton" IsEnabled="False" Height="50" Margin="3" CornerRadius="5">Reset</Button>
