@@ -19,7 +19,7 @@ public class Sprite : TransformControlRectangle
         {
             m_SpriteName = value;
             m_ToolTip.Content = value;
-            SpriteData.Name = value;
+            m_SpriteData.Name = value;
         }
     }
 
@@ -28,42 +28,22 @@ public class Sprite : TransformControlRectangle
         get => base.Width;
         set
         {
-            SpriteData.Width = value;
+            m_SpriteData.Width = value;
             base.Width = value;
         }
     }
     
-    public new Vector2 OriginPoint
+    public override Vector2 OriginPoint
     {
-        get => base.OriginPoint;
+        get => m_SpriteData.OriginPoint;
         set
         {
-            SpriteData.OriginPoint = value;
+            m_SpriteData.OriginPoint = value;
             base.OriginPoint = value;
         }
     }
 
     private SpriteData m_SpriteData;
-
-    public SpriteData SpriteData
-    {
-        get
-        {
-            m_SpriteData.StartX = Canvas.GetLeft(this);
-            m_SpriteData.EndX = Canvas.GetRight(this);
-            
-            m_SpriteData.StartY = Canvas.GetTop(this);
-            m_SpriteData.EndY = Canvas.GetBottom(this);
-
-            m_SpriteData.Width = this.Width;
-            m_SpriteData.Height = this.Height;
-
-            m_SpriteData.OriginPoint = OriginPoint;
-
-            return m_SpriteData;
-        }
-        set => m_SpriteData = value;
-    }
 
     public EventHandler? RightClicked;
 
@@ -80,7 +60,7 @@ public class Sprite : TransformControlRectangle
         Canvas.SetRight(this, data.EndX);
         Canvas.SetBottom(this, data.EndY);
         
-        SpriteData = new SpriteData(data);
+        m_SpriteData = new SpriteData(data);
         
         SpriteName = data.Name;
         Width = data.Width;
@@ -98,7 +78,21 @@ public class Sprite : TransformControlRectangle
         PointerExited += Sprite_PointerExited;
     }
 
-    public override SpriteData AsSpriteData() => new SpriteData(SpriteData);
+    public override SpriteData AsSpriteData()
+    {
+        m_SpriteData.StartX = Canvas.GetLeft(this);
+        m_SpriteData.EndX = Canvas.GetRight(this);
+            
+        m_SpriteData.StartY = Canvas.GetTop(this);
+        m_SpriteData.EndY = Canvas.GetBottom(this);
+
+        m_SpriteData.Width = this.Width;
+        m_SpriteData.Height = this.Height;
+
+        m_SpriteData.OriginPoint = OriginPoint;
+        
+        return new SpriteData(m_SpriteData);
+    }
 
     private async void Sprite_PointerEntered(object? sender, PointerEventArgs e)
     {

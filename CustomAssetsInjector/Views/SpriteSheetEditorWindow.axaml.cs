@@ -342,37 +342,32 @@ public partial class SpriteSheetEditorWindow : Window
         var spriteInfoList = new List<RectPacker.PackingSpriteData>();
         if (sprites != null)
             spriteInfoList.AddRange(sprites);
-            
+
+        var needsNguiFix = SpriteSheetPreviewBox.SpriteDatabase.NeedsNGUIFix;
+        
         foreach (var sprite in SpriteSheetPreviewBox.SpriteDatabase.Sprites)
         {
-            var xPos = 0;
-            var yPos = 0;
-            var spriteWidth = 0;
-            var spriteHeight = 0;
-            Dispatcher.UIThread.Invoke(() =>
-            {
-                xPos = (int)Canvas.GetLeft(sprite) - 1;
-                yPos = (int)Canvas.GetTop(sprite) - 1;
-                spriteWidth = (int)sprite.Width + 2;
-                spriteHeight = (int)sprite.Height + 2;
-            });
-
-            var cropRect = new Rectangle(xPos, yPos, spriteWidth, spriteHeight);
-                    
-            var croppedImage = atlasImage.Clone();
-            croppedImage.Mutate(ctx => ctx.Crop(cropRect));
-
-            SpriteData data = new();
+            SpriteData data = null!;
             Dispatcher.UIThread.Invoke(() =>
             {
                 data = sprite.AsSpriteData();
+            });
+
+            // expand the SpriteData rect by 1 pixel on each side so we crop the full sprite, and so the RectPacker packs the full sprite
+            if (needsNguiFix)
+            {
                 data.StartX -= 1;
                 data.EndX += 1;
                 data.StartY -= 1;
                 data.EndY += 1;
                 data.Width += 2;
                 data.Height += 2;
-            });
+            }
+            
+            var cropRect = new Rectangle((int)data.StartX, (int)data.StartY, (int)data.Width, (int)data.Height);
+            
+            var croppedImage = atlasImage.Clone();
+            croppedImage.Mutate(ctx => ctx.Crop(cropRect));
             
             var spriteInfo = new RectPacker.PackingSpriteData
             {
@@ -381,16 +376,21 @@ public partial class SpriteSheetEditorWindow : Window
             };
             spriteInfoList.Add(spriteInfo);
         }
-
+        
         var packedRects = RectPacker.PackImages(spriteInfoList, m_AtlasImagePath, 2);
-        foreach (var rect in packedRects)
+        
+        // shrink the rects by 1 pixel on each side after packing, so NGUI is happy
+        if (needsNguiFix)
         {
-            rect.SpriteData.StartX += 1;
-            rect.SpriteData.EndX -= 1;
-            rect.SpriteData.StartY += 1;
-            rect.SpriteData.EndY -= 1;
-            rect.SpriteData.Width -= 2;
-            rect.SpriteData.Height -= 2;
+            foreach (var rect in packedRects)
+            {
+                rect.SpriteData.StartX += 1;
+                rect.SpriteData.EndX -= 1;
+                rect.SpriteData.StartY += 1;
+                rect.SpriteData.EndY -= 1;
+                rect.SpriteData.Width -= 2;
+                rect.SpriteData.Height -= 2;
+            }
         }
 
         return packedRects;
@@ -461,7 +461,7 @@ public partial class SpriteSheetEditorWindow : Window
         rect.OnEditActionCreated += OnEditActionCreated;
     }
 
-    private void UpdateSizeControlValues(TransformControlRectangle sprite)
+    private void UpdateSizeControlValues(Sprite sprite)
     {
         XPositionInput.Value = (decimal)Canvas.GetLeft(sprite);
         YPositionInput.Value = (decimal)Canvas.GetTop(sprite);
@@ -1070,7 +1070,7 @@ public partial class SpriteSheetEditorWindow : Window
 
     private void AddNGUISpriteDataFields(NGUISpriteData spriteData, Sprite sprite)
     {
-        if (sprite.SpriteData is not NGUISpriteData nguiSpriteData)
+        if (sprite.AsSpriteData() is not NGUISpriteData nguiSpriteData)
             return;
 
         spriteData.BorderLeft = nguiSpriteData.BorderLeft;

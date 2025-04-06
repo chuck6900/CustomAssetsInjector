@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Media;
+using Avalonia.Threading;
 using CustomAssetsBackend.Classes;
 using CustomAssetsBackend.Misc;
 using CustomAssetsInjector.Actions;
@@ -335,5 +337,26 @@ public partial class SpriteSheetPreviewBox : UserControl
 public class SpriteDatabase
 {
     public bool IsSmoothMoves { get; set; }
+    
+    public bool NeedsNGUIFix
+    {
+        get
+        {
+            if (IsSmoothMoves)
+                return false;
+
+            var anySpritesAt00 = false;
+            Dispatcher.UIThread.Invoke(() =>
+            {
+                anySpritesAt00 = Sprites.Any(s => s.AsSpriteData() is { StartX: 0, StartY: 0 });
+            });
+
+            if (anySpritesAt00)
+                return false;
+            
+            return true;
+        }
+    }
+
     public List<Sprite> Sprites { get; } = new();
 }

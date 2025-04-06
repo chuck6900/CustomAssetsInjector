@@ -19,10 +19,10 @@
                                         <MenuItem Name="ResetApkButton" Header="Reset APK/IPA"/>
                                         <MenuItem Name="ResetPrefsButton" Header="Reset preferences"/>
                                 </MenuItem>
+                                <MenuItem Header="Export bundle" Name="ExportBundleButton"/>
                                 <MenuItem Header="Help">
                                         <MenuItem Name="AboutButton" Header="About"/>
                                 </MenuItem>
-                                <MenuItem Header="Export bundle" Name="ExportBundleButton"/>
                         </Menu>
                         <TextBlock />
                 </DockPanel>

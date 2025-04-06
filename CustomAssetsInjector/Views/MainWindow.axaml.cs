@@ -307,7 +307,7 @@ public partial class MainWindow : Window
 
     private async void About_OnClick(object? sender, RoutedEventArgs e)
     {
-        const string version = "0.2.0";
+        const string version = "0.3.2";
 
         await MessageBox.ShowMessageBox(
             this,
@@ -321,7 +321,7 @@ public partial class MainWindow : Window
                 Chimera Entertainment
                 AssetsTools.NET
                 Cpp2IL
-                Angry Birds Modding Hub
+                The Angry Birds Epic community
                 """,
             "About"
         );

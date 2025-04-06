@@ -28,7 +28,7 @@ public class TransformControlRectangle : Rectangle
     private EditSpriteAction? m_Action;
 
     // origin point is stored with values 0-1, where 0 is far left / top and 1 is far right / bottom
-    public Vector2 OriginPoint = new(0.5f, 0.5f);
+    public virtual Vector2 OriginPoint { get; set; } = new(0.5f, 0.5f);
 
     public virtual SpriteData AsSpriteData()
     {
@@ -74,7 +74,7 @@ public class TransformControlRectangle : Rectangle
         }
         else if (!m_DidUpdateLastTime)
         {
-            // last time we didnt update stuff, but now a handle has been clicked meaning we've just started editing
+            // last time we didn't update stuff, but now a handle has been clicked meaning we've just started editing
             m_Action = new EditSpriteAction(this);
             m_Action.SetPreviousSpriteData();
         }

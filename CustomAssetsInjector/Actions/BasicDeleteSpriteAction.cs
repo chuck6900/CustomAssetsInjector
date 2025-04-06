@@ -27,7 +27,7 @@ public class BasicDeleteSpriteAction : IAction
 
     public void Revert()
     {
-        m_Sprite.InitHandles(m_SpritePreviewBox.SelectionCanvas, m_SpritePreviewBox.AtlasImage, m_Sprite.SpriteData is SmoothMovesSpriteData);
+        m_Sprite.InitHandles(m_SpritePreviewBox.SelectionCanvas, m_SpritePreviewBox.AtlasImage, m_Sprite.AsSpriteData() is SmoothMovesSpriteData);
         
         if (!m_SpritePreviewBox.SelectionCanvas.Children.Contains(m_Sprite))
             m_SpritePreviewBox.SelectionCanvas.Children.Add(m_Sprite);
