@@ -348,7 +348,7 @@ public class SpriteDatabase
             var anySpritesAt00 = false;
             Dispatcher.UIThread.Invoke(() =>
             {
-                anySpritesAt00 = Sprites.Any(s => s.AsSpriteData() is { StartX: 0, StartY: 0 });
+                anySpritesAt00 = Sprites.Any(s => s.AsSpriteData() is { StartX: 0 } or { StartY: 0 });
             });
 
             if (anySpritesAt00)
