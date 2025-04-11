@@ -1087,12 +1087,8 @@ public partial class SpriteSheetEditorWindow : Window
     private void LoadSprites()
     {
         SpriteSheetPreviewBox.Reset();
-
-        // should never be null in this case but yeah
-        if (m_SpriteSheetManager == null)
-            return;
         
-        var sprites = m_SpriteSheetManager.Sprites;
+        var sprites = m_SpriteSheetManager!.Sprites;
 
         var isSmoothMoves = m_SpriteSheetManager is SmoothMovesSpriteSheetManager;
         SpriteSheetPreviewBox.SpriteDatabase.IsSmoothMoves = isSmoothMoves;
@@ -1110,20 +1106,17 @@ public partial class SpriteSheetEditorWindow : Window
 
         OriginXInput.IsEnabled = isSmoothMoves;
         OriginYInput.IsEnabled = isSmoothMoves;
+        
+        // toggle create buttons
+        CreateTab.IsEnabled = isSmoothMoves;
+        CreateNewHeadgearButton.IsEnabled = isSmoothMoves;
+        
+        // disable the sprite repacking buttons since SmoothMoves atlases cant be rearranged
+        ImportSpritesButton.IsEnabled = !isSmoothMoves;
+        DeleteRectDeleteImageButton.IsEnabled = !isSmoothMoves;
 
-        if (isSmoothMoves)
-        {
-            // enable create buttons
-            CreateTab.IsEnabled = true;
-            CreateNewHeadgearButton.IsEnabled = true;
-            
-            // disable the sprite repacking buttons since SmoothMoves atlases cant be rearranged
-            ImportSpritesButton.IsEnabled = false;
-            DeleteRectDeleteImageButton.IsEnabled = false;
-
-            // enable atlas size verification (make sure the imported atlas image is the same resolution as the current one)
-            VerifyAtlasSizeOnImport = true;
-        }
+        // toggle atlas size verification (makes sure the imported atlas image is the same resolution as the current one)
+        VerifyAtlasSizeOnImport = isSmoothMoves;
     }
 
     private void LoadImage()
@@ -1150,10 +1143,12 @@ public partial class SpriteSheetEditorWindow : Window
         
         SetMaxSizeControlValues();
     }
-    
-    private void OnAtlasNameInputUpdated(object? sender, TextChangedEventArgs e) 
-        => LoadAndSaveAtlasButton.IsEnabled = !string.IsNullOrEmpty(AtlasNameInput.Text);
-    
+
+    private void OnAtlasNameInputUpdated(object? sender, TextChangedEventArgs e)
+    {
+        LoadAndSaveAtlasButton.IsEnabled = !string.IsNullOrEmpty(AtlasNameInput.Text);
+    }
+
     private void OnAtlasNameInputKeyDown(object? sender, KeyEventArgs e)
     {
         if (e.Key == Key.Enter)
