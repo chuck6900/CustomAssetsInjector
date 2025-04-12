@@ -12,6 +12,7 @@ public static class TextureMain
         if (baseField == null)
             return false;
 
+        baseField["m_TextureFormat"].AsInt = 4;
         var tex = TextureFile.ReadTextureFile(baseField);
 
         try
